@@ -19,10 +19,6 @@ class AppRouter {
         pageBuilder: (context, state) =>
             const NoTransitionPage(child: MainTabView()),
       ),
-      // GoRoute(
-      //   path: AppRoutes.settings,
-      //   builder: (context, state) => const SettingsPage(),
-      // ),
     ],
   );
 }

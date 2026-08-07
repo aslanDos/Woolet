@@ -25,13 +25,13 @@ class AppColorScheme {
     error: AppColors.red0,
     onError: AppColors.white,
 
-    surface: AppColors.neutral100,
+    surface: AppColors.white,
     onSurface: AppColors.black,
 
     surfaceContainerLowest: AppColors.white,
     surfaceContainerLow: AppColors.neutral50,
 
-    surfaceContainer: AppColors.white,
+    surfaceContainer: AppColors.neutral100,
 
     surfaceContainerHigh: AppColors.neutral200,
     surfaceContainerHighest: AppColors.neutral300,

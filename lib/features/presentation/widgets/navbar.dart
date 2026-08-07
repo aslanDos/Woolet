@@ -1,23 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:pie_menu/pie_menu.dart';
+import 'package:woolet/core/constants/app_enums.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/transaction_type_x.dart';
 
 class Navbar extends StatelessWidget {
   const Navbar({
     super.key,
     this.activeIndex = 0,
     required this.onTap,
-    this.onAddTap,
+    required this.onAddTap,
   });
 
   final int activeIndex;
   final ValueChanged<int> onTap;
-  final VoidCallback? onAddTap;
+  final ValueChanged<TransactionType> onAddTap;
 
   static const _items = <({IconData icon, String label})>[
     (icon: LucideIcons.receipt_text, label: 'Transactions'),
     (icon: LucideIcons.chart_no_axes_column_increasing, label: 'Analytics'),
-    (icon: LucideIcons.wallet_cards, label: 'Budgets'),
+    (icon: LucideIcons.piggy_bank, label: 'Budgets'),
   ];
 
   @override
@@ -112,7 +115,7 @@ class _NavbarButton extends StatelessWidget {
           child: Center(
             child: SizedBox(
               width: 52,
-              height: 58,
+              height: 52,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -139,18 +142,30 @@ class _NavbarButton extends StatelessWidget {
 }
 
 class _AddButton extends StatelessWidget {
-  const _AddButton({this.onTap});
+  const _AddButton({required this.onTap});
 
-  final VoidCallback? onTap;
+  final ValueChanged<TransactionType> onTap;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = colorScheme.brightness == Brightness.dark;
 
-    return Semantics(
-      button: true,
-      label: 'Add transaction',
+    return PieMenu(
+      onPressed: () => onTap(TransactionType.expense),
+      actions: TransactionType.values
+          .map(
+            (type) => PieAction(
+              tooltip: Text(type.label),
+              onSelect: () => onTap(type),
+              buttonThemeHovered: PieButtonTheme(
+                backgroundColor: type.backgroundColor,
+                iconColor: type.backgroundColor,
+              ),
+              child: Icon(type.icon, size: 24.0, color: context.c.onPrimary),
+            ),
+          )
+          .toList(),
       child: SizedBox.square(
         dimension: 58,
         child: DecoratedBox(
@@ -169,14 +184,10 @@ class _AddButton extends StatelessWidget {
           child: Material(
             color: colorScheme.primary,
             shape: const CircleBorder(),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: onTap,
-              child: Icon(
-                LucideIcons.plus,
-                color: colorScheme.onPrimary,
-                size: 30,
-              ),
+            child: Icon(
+              LucideIcons.plus,
+              size: 30,
+              color: colorScheme.onPrimary,
             ),
           ),
         ),

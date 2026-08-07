@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:pie_menu/pie_menu.dart';
 import 'package:woolet/core/constants/app_constants.dart';
+import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/core/theme/app_color_scheme.dart';
 import 'package:woolet/core/theme/app_colors.dart';
 import 'package:woolet/core/theme/app_text_theme.dart';
@@ -17,6 +19,30 @@ class AppTheme {
       displayColor: scheme.onSurface,
       decorationColor: scheme.onSurface,
     );
+
+    final PieTheme pieTheme = PieTheme(
+      customAngleDiff: 45,
+      radius: 200.0,
+      customAngle: 135,
+      leftClickShowsMenu: true,
+      rightClickShowsMenu: true,
+      regularPressShowsMenu: false,
+      longPressDuration: const Duration(milliseconds: 350),
+      buttonTheme: PieButtonTheme(
+        backgroundColor: scheme.secondary,
+        iconColor: scheme.onSecondary,
+      ),
+      buttonThemeHovered: PieButtonTheme(
+        backgroundColor: scheme.secondary,
+        iconColor: scheme.primary,
+      ),
+      overlayColor: scheme.surface.withValues(alpha: 0.8),
+      pointerColor: Colors.transparent,
+      // pointerSize: 2.0,
+      tooltipTextStyle: appTextTheme.headlineLarge,
+      menuAlignment: .center,
+    );
+
     return ThemeData(
       useMaterial3: true,
       visualDensity: VisualDensity.adaptivePlatformDensity,
@@ -24,6 +50,7 @@ class AppTheme {
       brightness: scheme.brightness,
       textTheme: textTheme,
       extensions: [
+        PieThemeExtension(pieTheme: pieTheme),
         scheme.brightness == Brightness.dark
             ? AppThemeColors.dark
             : AppThemeColors.light,
@@ -35,6 +62,9 @@ class AppTheme {
         backgroundColor: scheme.surface,
         foregroundColor: scheme.onSurface,
         surfaceTintColor: Colors.transparent,
+        leadingWidth: 72,
+        centerTitle: true,
+        scrolledUnderElevation: 0.0,
         elevation: 0,
       ),
       cardTheme: CardThemeData(
@@ -70,6 +100,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
+          splashFactory: NoSplash.splashFactory,
         ),
       ),
       dividerTheme: DividerThemeData(
@@ -81,6 +112,15 @@ class AppTheme {
         backgroundColor: scheme.surfaceContainerLow,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          splashFactory: NoSplash.splashFactory,
+          backgroundColor: scheme.surfaceContainer,
+          foregroundColor: scheme.onSurface,
+          iconSize: 24,
+          padding: EdgeInsets.all(10),
+        ),
       ),
       bottomSheetTheme: BottomSheetThemeData(
         backgroundColor: scheme.surface,

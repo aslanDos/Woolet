@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:pie_menu/pie_menu.dart';
+import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/features/presentation/screens/analytics_screen.dart';
 import 'package:woolet/features/presentation/screens/budgets_screen.dart';
 import 'package:woolet/features/presentation/screens/home_screen.dart';
+import 'package:woolet/features/presentation/sheets/transaction_form_sheet.dart';
 import 'package:woolet/features/presentation/widgets/navbar.dart';
 
 class MainTabView extends StatefulWidget {
@@ -47,23 +50,28 @@ class _MainTabViewState extends State<MainTabView>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBody: true,
-      appBar: AppBar(
-        title: Text(_titles[_currentIndex], style: context.t.headlineLarge),
-        centerTitle: false,
-      ),
-      bottomNavigationBar: Navbar(
-        activeIndex: _currentIndex,
-        onTap: _navigateTo,
-        onAddTap: () {
-          // TODO: Open the create-transaction flow.
-        },
-      ),
-      body: TabBarView(
-        physics: const NeverScrollableScrollPhysics(),
-        controller: _tabController,
-        children: const [HomeScreen(), AnalyticsScreen(), BudgetsScreen()],
+    return PieCanvas(
+      theme: context.pieTheme,
+      child: Scaffold(
+        extendBody: true,
+        appBar: AppBar(
+          title: Text(_titles[_currentIndex], style: context.t.headlineLarge),
+          centerTitle: false,
+        ),
+        bottomNavigationBar: Navbar(
+          activeIndex: _currentIndex,
+          onTap: _navigateTo,
+          onAddTap: (type) {
+            context.openBottomSheet(
+              child: TransactionFormSheet(initialTransactionType: type),
+            );
+          },
+        ),
+        body: TabBarView(
+          physics: const NeverScrollableScrollPhysics(),
+          controller: _tabController,
+          children: const [HomeScreen(), AnalyticsScreen(), BudgetsScreen()],
+        ),
       ),
     );
   }

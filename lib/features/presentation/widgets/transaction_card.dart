@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:woolet/core/constants/icons.dart';
+import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 
 class TransactionCard extends StatelessWidget {

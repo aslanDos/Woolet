@@ -11,12 +11,11 @@ Label - Used for buttons, chips, badges, captions, and other small UI labels.
 */
 
 final TextTheme appTextTheme = .new(
-  // displayLarge: ,
-  // displayMedium: ,
+  displayLarge: AppTextStyle.display64,
+  displayMedium: AppTextStyle.display48,
   // displaySmall: ,
   headlineLarge: AppTextStyle.headLine28,
-
-  // headlineMedium: ,
+  headlineMedium: AppTextStyle.headdline24,
   // headlineSmall: ,
   titleLarge: AppTextStyle.title16,
   titleMedium: AppTextStyle.title14,
@@ -32,8 +31,26 @@ final TextTheme appTextTheme = .new(
 );
 
 class AppTextStyle {
+  static const TextStyle display64 = TextStyle(
+    fontSize: 64,
+    fontWeight: .w600,
+    height: 1.25,
+  );
+
+  static const TextStyle display48 = TextStyle(
+    fontSize: 48,
+    fontWeight: .w600,
+    height: 1.25,
+  );
+
   static const TextStyle headLine28 = TextStyle(
     fontSize: 28,
+    fontWeight: .w700,
+    height: 1.25,
+  );
+
+  static const TextStyle headdline24 = TextStyle(
+    fontSize: 24,
     fontWeight: .w700,
     height: 1.25,
   );
