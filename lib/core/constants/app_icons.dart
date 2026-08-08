@@ -19,26 +19,38 @@ enum IconGroup {
 }
 
 enum AppIcon {
-  banknote(LucideIcons.banknote, .finance),
-  creditCard(LucideIcons.credit_card, .finance),
-  circleDollarSign(LucideIcons.circle_dollar_sign, .finance),
-  landmark(LucideIcons.landmark, .finance),
-  trendingUp(LucideIcons.trending_up, .finance),
-  wallet(LucideIcons.wallet, .finance),
-  briefcase(LucideIcons.briefcase_business, .finance),
-  gift(LucideIcons.gift, .other),
-  groceries(LucideIcons.shopping_cart, .food),
-  cafe(LucideIcons.utensils, .food),
-  entertainment(LucideIcons.gamepad_2, .other),
-  fuel(LucideIcons.fuel, .transport),
-  shopping(LucideIcons.shopping_bag, .other),
-  taxi(LucideIcons.car_taxi_front, .transport),
-  home(LucideIcons.house, .home),
-  car(LucideIcons.car_front, .transport),
-  pharmacy(LucideIcons.pill, .beauty);
+  banknote('banknote', LucideIcons.banknote, .finance),
+  creditCard('credit_card', LucideIcons.credit_card, .finance),
+  circleDollarSign(
+    'circle_dollar_sign',
+    LucideIcons.circle_dollar_sign,
+    .finance,
+  ),
+  landmark('landmark', LucideIcons.landmark, .finance),
+  trendingUp('trending_up', LucideIcons.trending_up, .finance),
+  wallet('wallet', LucideIcons.wallet, .finance),
+  briefcase('briefcase', LucideIcons.briefcase_business, .finance),
+  gift('gift', LucideIcons.gift, .other),
+  groceries('groceries', LucideIcons.shopping_cart, .food),
+  cafe('cafe', LucideIcons.utensils, .food),
+  entertainment('entertainment', LucideIcons.gamepad_2, .other),
+  fuel('fuel', LucideIcons.fuel, .transport),
+  shopping('shopping', LucideIcons.shopping_bag, .other),
+  taxi('taxi', LucideIcons.car_taxi_front, .transport),
+  home('home', LucideIcons.house, .home),
+  car('car', LucideIcons.car_front, .transport),
+  pharmacy('pharmacy', LucideIcons.pill, .beauty);
 
-  const AppIcon(this.icon, this.group);
+  const AppIcon(this.code, this.icon, this.group);
 
+  final String code;
   final IconData icon;
   final IconGroup group;
+
+  static AppIcon fromCode(String code) {
+    return values.firstWhere(
+      (appIcon) => appIcon.code == code,
+      orElse: () => AppIcon.wallet,
+    );
+  }
 }

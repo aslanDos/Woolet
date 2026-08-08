@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:woolet/core/bootstrap/app_bootstrap.dart';
 import 'package:woolet/core/router/router.dart';
 import 'package:woolet/core/theme/app_theme.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await bootstrapApp();
+
   runApp(const WooletApp());
 }
 
