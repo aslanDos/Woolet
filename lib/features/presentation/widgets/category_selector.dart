@@ -64,6 +64,7 @@ class _CategorySelectorContent extends StatelessWidget {
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text('Select category', style: context.t.titleLarge),
             IconButton(
@@ -71,11 +72,18 @@ class _CategorySelectorContent extends StatelessWidget {
               tooltip: 'Manage categories',
               icon: const Icon(LucideIcons.settings),
               iconSize: 18,
-              style: IconButton.styleFrom(backgroundColor: Colors.transparent),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                fixedSize: const Size.square(20),
+                minimumSize: const Size.square(20),
+                maximumSize: const Size.square(20),
+                padding: EdgeInsets.zero,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 18),
         BlocBuilder<CategoryBloc, CategoryState>(
           builder: (context, state) {
             final categories = state.categories

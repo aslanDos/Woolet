@@ -12,6 +12,7 @@ import 'package:woolet/features/presentation/widgets/category_selector.dart';
 import 'package:woolet/features/presentation/widgets/custom_bottom_sheet.dart';
 import 'package:woolet/features/presentation/widgets/date_selector.dart';
 import 'package:woolet/features/presentation/widgets/note_field.dart';
+import 'package:woolet/features/presentation/widgets/to_account_field.dart';
 import 'package:woolet/features/presentation/widgets/type_toggle.dart';
 
 class TransactionFormSheet extends StatelessWidget {
@@ -26,7 +27,13 @@ class TransactionFormSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomBottomSheet(
       height: MediaQuery.sizeOf(context).height * 0.9,
-      footer: Button(label: 'Save', onPressed: () {}),
+      footer: Button(
+        label: 'Save',
+        onPressed: () {
+          FocusManager.instance.primaryFocus?.unfocus();
+          context.pop();
+        },
+      ),
       leading: IconButton.filled(
         onPressed: () {
           FocusManager.instance.primaryFocus?.unfocus();
@@ -114,9 +121,13 @@ class _TransactionFormState extends State<_TransactionForm> {
             onChanged: (date) => setState(() => _selectedDate = date),
           ),
           const SizedBox(height: 56),
+          if (categoryType == null) ...[
+            ToAccountField(),
+            const SizedBox(height: 24),
+          ],
           NoteField(),
           if (categoryType != null) ...[
-            const SizedBox(height: 14),
+            const SizedBox(height: 24),
             CategorySelector(
               type: categoryType,
               selected: _selectedCategory,

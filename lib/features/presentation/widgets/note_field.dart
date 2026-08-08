@@ -15,8 +15,10 @@ class NoteField extends StatelessWidget {
       crossAxisAlignment: .start,
       children: [
         Text('Add a note', style: context.t.titleLarge),
-        const SizedBox(height: 12),
+        const SizedBox(height: 18),
         TextField(
+          autocorrect: false,
+          style: context.t.bodyMedium,
           decoration: InputDecoration(
             hintText: 'Note',
             filled: true,
