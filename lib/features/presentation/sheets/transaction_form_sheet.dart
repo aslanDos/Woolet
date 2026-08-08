@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:go_router/go_router.dart';
 import 'package:woolet/core/constants/app_enums.dart';
-import 'package:woolet/core/constants/transaction_category.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/core/extensions/transaction_type_x.dart';
+import 'package:woolet/features/domain/entities/category_entity.dart';
 import 'package:woolet/features/presentation/widgets/account_selector.dart';
 import 'package:woolet/features/presentation/widgets/amount_field.dart';
 import 'package:woolet/features/presentation/widgets/button.dart';
@@ -63,7 +63,7 @@ class _TransactionFormState extends State<_TransactionForm> {
   late TransactionType _selectedType;
   double _amount = 0;
   DateTime _selectedDate = DateTime.now();
-  TransactionCategory? _selectedCategory;
+  CategoryEntity? _selectedCategory;
 
   @override
   void initState() {
@@ -73,6 +73,12 @@ class _TransactionFormState extends State<_TransactionForm> {
 
   @override
   Widget build(BuildContext context) {
+    final categoryType = switch (_selectedType) {
+      TransactionType.income => CategoryType.income,
+      TransactionType.expense => CategoryType.expense,
+      TransactionType.transfer => null,
+    };
+
     return SizedBox(
       width: double.infinity,
       child: Column(
@@ -109,12 +115,11 @@ class _TransactionFormState extends State<_TransactionForm> {
           ),
           const SizedBox(height: 56),
           NoteField(),
-          if (_selectedType != TransactionType.transfer) ...[
+          if (categoryType != null) ...[
             const SizedBox(height: 14),
             CategorySelector(
-              categories: TransactionCategory.forType(_selectedType),
+              type: categoryType,
               selected: _selectedCategory,
-              foregroundColor: context.c.primary,
               onChanged: (category) {
                 setState(() => _selectedCategory = category);
               },
