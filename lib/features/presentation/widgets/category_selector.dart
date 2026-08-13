@@ -122,12 +122,11 @@ class _CategorySelectorContent extends StatelessWidget {
             return GridView.builder(
               shrinkWrap: true,
               primary: false,
-              padding: EdgeInsets.zero,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: categories.length,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 4,
-                childAspectRatio: 0.76,
+                childAspectRatio: 0.84,
               ),
               itemBuilder: (context, index) {
                 final category = categories[index];

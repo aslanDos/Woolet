@@ -5,6 +5,7 @@ import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/features/presentation/screens/analytics_screen.dart';
 import 'package:woolet/features/presentation/screens/budgets_screen.dart';
 import 'package:woolet/features/presentation/screens/home_screen.dart';
+import 'package:woolet/features/presentation/screens/settings_screen.dart';
 import 'package:woolet/features/presentation/sheets/transaction_form_sheet.dart';
 import 'package:woolet/features/presentation/widgets/navbar.dart';
 
@@ -26,7 +27,7 @@ class _MainTabViewState extends State<MainTabView>
   void initState() {
     super.initState();
     _tabController = TabController(
-      length: 3,
+      length: 4,
       initialIndex: _currentIndex,
       vsync: this,
     );
@@ -70,7 +71,12 @@ class _MainTabViewState extends State<MainTabView>
         body: TabBarView(
           physics: const NeverScrollableScrollPhysics(),
           controller: _tabController,
-          children: const [HomeScreen(), AnalyticsScreen(), BudgetsScreen()],
+          children: const [
+            HomeScreen(),
+            AnalyticsScreen(),
+            BudgetsScreen(),
+            SettingsScreen(),
+          ],
         ),
       ),
     );

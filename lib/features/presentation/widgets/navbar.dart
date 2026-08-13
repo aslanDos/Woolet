@@ -21,6 +21,7 @@ class Navbar extends StatelessWidget {
     (icon: LucideIcons.receipt_text, label: 'Transactions'),
     (icon: LucideIcons.chart_no_axes_column_increasing, label: 'Analytics'),
     (icon: LucideIcons.piggy_bank, label: 'Budgets'),
+    (icon: LucideIcons.settings, label: 'Settings'),
   ];
 
   @override
@@ -57,7 +58,7 @@ class Navbar extends StatelessWidget {
                             ),
                           ],
                   ),
-                  child: Row(children: [_item(0), _item(1), _item(2)]),
+                  child: Row(children: List.generate(_items.length, _item)),
                 ),
               ),
               const SizedBox(width: 12),
