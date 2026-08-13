@@ -20,7 +20,9 @@ class AmountField extends StatefulWidget {
 
 class _AmountFieldState extends State<AmountField> {
   late final TextEditingController _controller;
-  late bool _isEmpty;
+  late String _displayText;
+  late double _amount;
+  int _changeDirection = 0;
 
   @override
   void initState() {
@@ -29,7 +31,8 @@ class _AmountFieldState extends State<AmountField> {
         ? ''
         : widget.initialValue.toString().replaceFirst(RegExp(r'\.0$'), '');
     _controller = TextEditingController(text: initialText);
-    _isEmpty = initialText.isEmpty;
+    _displayText = initialText;
+    _amount = widget.initialValue;
   }
 
   @override
@@ -48,43 +51,74 @@ class _AmountFieldState extends State<AmountField> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Flexible(
-            child: IntrinsicWidth(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: 48),
-                child: TextField(
-                  showCursor: false,
-                  controller: _controller,
-                  autofocus: false,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
+            child: AnimatedSize(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              alignment: Alignment.bottomCenter,
+              child: IntrinsicWidth(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 64),
+                  child: Stack(
+                    alignment: Alignment.bottomCenter,
+                    children: [
+                      TextField(
+                        showCursor: false,
+                        controller: _controller,
+                        autofocus: false,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        textInputAction: TextInputAction.done,
+                        textAlign: TextAlign.center,
+                        inputFormatters: [_AmountInputFormatter()],
+                        style: context.t.displayLarge?.copyWith(
+                          color: Colors.transparent,
+                        ),
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          filled: false,
+                          isCollapsed: true,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                        onTapOutside: (_) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        },
+                        onSubmitted: (_) {
+                          FocusManager.instance.primaryFocus?.unfocus();
+                        },
+                        onChanged: _handleChanged,
+                      ),
+                      IgnorePointer(
+                        child: ExcludeSemantics(
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 220),
+                            reverseDuration: const Duration(milliseconds: 180),
+                            switchInCurve: Curves.easeOutCubic,
+                            switchOutCurve: Curves.easeInCubic,
+                            transitionBuilder: _buildAmountTransition,
+                            layoutBuilder: (currentChild, previousChildren) {
+                              return Stack(
+                                alignment: Alignment.bottomCenter,
+                                children: [...previousChildren, ?currentChild],
+                              );
+                            },
+                            child: Text(
+                              _displayText.isEmpty ? '0' : _displayText,
+                              key: ValueKey(_displayText),
+                              maxLines: 1,
+                              style: context.t.displayLarge?.copyWith(
+                                color: _displayText.isEmpty
+                                    ? context.c.outline
+                                    : context.c.onSurface,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  textInputAction: TextInputAction.done,
-                  textAlign: TextAlign.center,
-                  inputFormatters: [_AmountInputFormatter()],
-                  style: context.t.displayLarge,
-                  decoration: InputDecoration(
-                    hintText: '0',
-                    hintStyle: context.t.displayLarge?.copyWith(
-                      color: context.c.outline,
-                    ),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
-                    filled: false,
-                    isCollapsed: true,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  onTapOutside: (_) {
-                    FocusManager.instance.primaryFocus?.unfocus();
-                  },
-                  onSubmitted: (_) {
-                    FocusManager.instance.primaryFocus?.unfocus();
-                  },
-                  onChanged: (value) {
-                    setState(() => _isEmpty = value.isEmpty);
-                    final normalizedValue = value.replaceFirst(',', '.');
-                    widget.onChanged(double.tryParse(normalizedValue) ?? 0);
-                  },
                 ),
               ),
             ),
@@ -92,6 +126,37 @@ class _AmountFieldState extends State<AmountField> {
           const SizedBox(width: 4),
           Text(widget.currencySymbol, style: context.t.displayMedium),
         ],
+      ),
+    );
+  }
+
+  void _handleChanged(String value) {
+    final normalizedValue = value.replaceFirst(',', '.');
+    final amount = double.tryParse(normalizedValue) ?? 0;
+
+    setState(() {
+      _changeDirection = amount.compareTo(_amount);
+      _amount = amount;
+      _displayText = value;
+    });
+    widget.onChanged(amount);
+  }
+
+  Widget _buildAmountTransition(Widget child, Animation<double> animation) {
+    final direction = _changeDirection == 0 ? 1 : _changeDirection;
+    final offset = Tween<Offset>(
+      begin: Offset(0, 0.22 * direction),
+      end: Offset.zero,
+    ).animate(animation);
+
+    return FadeTransition(
+      opacity: animation,
+      child: SlideTransition(
+        position: offset,
+        child: ScaleTransition(
+          scale: Tween<double>(begin: 0.96, end: 1).animate(animation),
+          child: child,
+        ),
       ),
     );
   }

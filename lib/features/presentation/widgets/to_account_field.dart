@@ -1,15 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/features/domain/entities/account_entity.dart';
 
 class ToAccountField extends StatelessWidget {
-  final String accountName;
+  final AccountEntity? account;
   final VoidCallback? onTap;
 
-  const ToAccountField({super.key, this.accountName = 'Freedom', this.onTap});
+  const ToAccountField({super.key, required this.account, this.onTap});
 
   @override
   Widget build(BuildContext context) {
+    final selectedAccount = account;
+    final color = selectedAccount?.colorValue == null
+        ? context.c.onSurface
+        : Color(selectedAccount!.colorValue!);
+    final icon = selectedAccount == null
+        ? LucideIcons.building_2
+        : AppIcon.fromCode(selectedAccount.iconCode).icon;
+    final accountName = selectedAccount?.name ?? 'Select account';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -29,7 +40,7 @@ class ToAccountField extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 child: Row(
                   children: [
-                    const Icon(LucideIcons.building_2, size: 20),
+                    Icon(icon, size: 20, color: color),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(accountName, style: context.t.bodyMedium),
