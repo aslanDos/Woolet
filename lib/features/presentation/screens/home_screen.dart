@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
+import 'package:woolet/core/settings/currency_controller.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
 import 'package:woolet/features/presentation/blocs/account/account_bloc.dart';
 import 'package:woolet/features/presentation/sheets/accounts_sheet.dart';
@@ -81,18 +82,24 @@ class _HomeContentState extends State<_HomeContent> {
             final currencies = visibleAccounts
                 .map((account) => account.currencyCode)
                 .toSet();
+            final currencyController = sl<CurrencyController>();
 
             return Column(
               children: [
                 AccountOverview(
                   account: selectedAccount,
+                  currencySymbol: selectedAccount == null
+                      ? currencyController.value.symbol
+                      : currencyController.symbolForCode(
+                          selectedAccount.currencyCode,
+                        ),
                   allAccounts: _allAccountsSelected,
                   totalBalanceMinor: visibleAccounts.fold<int>(
                     0,
                     (total, account) => total + account.balanceMinor,
                   ),
-                  totalCurrencyCode: currencies.length == 1
-                      ? currencies.single
+                  totalCurrencySymbol: currencies.length == 1
+                      ? currencyController.symbolForCode(currencies.single)
                       : null,
                   period: _period,
                   onAccountTap: _openAccountSelector,

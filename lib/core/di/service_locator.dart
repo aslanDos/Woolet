@@ -1,5 +1,8 @@
 import 'package:get_it/get_it.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:woolet/core/database/app_database.dart';
+import 'package:woolet/core/settings/currency_controller.dart';
+import 'package:woolet/core/theme/theme_controller.dart';
 import 'package:woolet/features/data/datasources/account_local_data_source.dart';
 import 'package:woolet/features/data/datasources/account_local_data_source_impl.dart';
 import 'package:woolet/features/data/datasources/category_local_data_source.dart';
@@ -18,6 +21,11 @@ import 'package:woolet/features/presentation/blocs/category/category_bloc.dart';
 final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
+  final preferences = await SharedPreferences.getInstance();
+  sl.registerLazySingleton<ThemeController>(() => ThemeController(preferences));
+  final currencyController = await CurrencyController.create(preferences);
+  sl.registerSingleton<CurrencyController>(currencyController);
+
   sl.registerLazySingleton<AppDatabase>(
     AppDatabase.new,
     dispose: (database) => database.close(),

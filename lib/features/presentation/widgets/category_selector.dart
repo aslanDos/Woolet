@@ -69,7 +69,6 @@ class _CategorySelectorContent extends StatelessWidget {
             Text('Select category', style: context.t.titleLarge),
             IconButton(
               onPressed: () => _openSettings(context),
-              tooltip: 'Manage categories',
               icon: const Icon(LucideIcons.settings),
               iconSize: 18,
               style: IconButton.styleFrom(

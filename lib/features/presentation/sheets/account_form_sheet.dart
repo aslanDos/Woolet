@@ -6,6 +6,7 @@ import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/settings/currency_controller.dart';
 import 'package:woolet/core/theme/app_colors.dart';
 import 'package:woolet/core/utils/uuid.dart';
 import 'package:woolet/core/widgets/alert_dialog.dart';
@@ -52,7 +53,8 @@ class _AccountFormViewState extends State<_AccountFormView> {
   bool _deleting = false;
 
   bool get _isEditing => widget.account != null;
-  String get _currencyCode => widget.account?.currencyCode ?? 'KZT';
+  String get _currencyCode =>
+      widget.account?.currencyCode ?? sl<CurrencyController>().value.code;
 
   @override
   void initState() {
@@ -101,14 +103,12 @@ class _AccountFormViewState extends State<_AccountFormView> {
           title: Text(_isEditing ? 'Edit account' : 'New account'),
           leading: IconButton.filled(
             onPressed: state.isProcessing ? null : () => Navigator.pop(context),
-            tooltip: 'Close',
             icon: const Icon(LucideIcons.x),
           ),
           actions: [
             if (_isEditing)
               IconButton.filled(
                 onPressed: state.isProcessing ? null : _delete,
-                tooltip: 'Delete account',
                 style: IconButton.styleFrom(
                   foregroundColor: context.c.error,
                   backgroundColor: context.c.error.withValues(alpha: 0.14),

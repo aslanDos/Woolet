@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/settings/currency_controller.dart';
 
 class AmountField extends StatefulWidget {
   const AmountField({
     super.key,
     required this.onChanged,
     this.initialValue = 0,
-    this.currencySymbol = '₸',
+    this.currencySymbol,
   });
 
   final double initialValue;
-  final String currencySymbol;
+  final String? currencySymbol;
   final ValueChanged<double> onChanged;
 
   @override
@@ -43,6 +45,9 @@ class _AmountFieldState extends State<AmountField> {
 
   @override
   Widget build(BuildContext context) {
+    final currencySymbol =
+        widget.currencySymbol ?? sl<CurrencyController>().value.symbol;
+
     return Semantics(
       label: 'Amount',
       textField: true,
@@ -124,7 +129,7 @@ class _AmountFieldState extends State<AmountField> {
             ),
           ),
           const SizedBox(width: 4),
-          Text(widget.currencySymbol, style: context.t.displayMedium),
+          Text(currencySymbol, style: context.t.displayMedium),
         ],
       ),
     );

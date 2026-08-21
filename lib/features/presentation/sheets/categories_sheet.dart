@@ -58,10 +58,13 @@ class _CategoriesSheetViewState extends State<_CategoriesSheetView> {
     return CustomBottomSheet(
       safeAreaBottom: false,
       height: MediaQuery.sizeOf(context).height * 0.677,
+      leading: IconButton.filled(
+        onPressed: () => Navigator.pop(context),
+        icon: const Icon(LucideIcons.x),
+      ),
       actions: [
         IconButton.filled(
           onPressed: widget.onAddCategory ?? () => _openCategoryForm(),
-          tooltip: 'Add category',
           icon: const Icon(LucideIcons.plus),
         ),
       ],

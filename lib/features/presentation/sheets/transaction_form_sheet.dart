@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:go_router/go_router.dart';
 import 'package:woolet/core/constants/app_enums.dart';
+import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/core/extensions/transaction_type_x.dart';
+import 'package:woolet/core/settings/currency_controller.dart';
 import 'package:woolet/features/domain/entities/category_entity.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
 import 'package:woolet/features/presentation/sheets/accounts_sheet.dart';
@@ -77,15 +79,22 @@ class _TransactionFormSheetState extends State<TransactionFormSheet> {
       ],
       child: _TransactionForm(
         initialTransactionType: widget.initialTransactionType,
+        currencySymbol: account == null
+            ? sl<CurrencyController>().value.symbol
+            : sl<CurrencyController>().symbolForCode(account.currencyCode),
       ),
     );
   }
 }
 
 class _TransactionForm extends StatefulWidget {
-  const _TransactionForm({required this.initialTransactionType});
+  const _TransactionForm({
+    required this.initialTransactionType,
+    required this.currencySymbol,
+  });
 
   final TransactionType initialTransactionType;
+  final String currencySymbol;
 
   @override
   State<_TransactionForm> createState() => _TransactionFormState();
@@ -150,6 +159,7 @@ class _TransactionFormState extends State<_TransactionForm> {
           const SizedBox(height: 56),
           AmountField(
             initialValue: _amount,
+            currencySymbol: widget.currencySymbol,
             onChanged: (amount) => _amount = amount,
           ),
           const SizedBox(height: 12),

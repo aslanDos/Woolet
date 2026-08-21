@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:woolet/core/bootstrap/app_bootstrap.dart';
+import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/router/router.dart';
 import 'package:woolet/core/theme/app_theme.dart';
+import 'package:woolet/core/theme/theme_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,13 +18,16 @@ class WooletApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      title: 'Woolet',
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.system,
-      routerConfig: AppRouter.router,
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: sl<ThemeController>(),
+      builder: (context, themeMode, _) => MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+        title: 'Woolet',
+        theme: AppTheme.light,
+        darkTheme: AppTheme.dark,
+        themeMode: themeMode,
+        routerConfig: AppRouter.router,
+      ),
     );
   }
 }

@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
-import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/settings/currency_controller.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
 import 'package:woolet/features/presentation/blocs/account/account_bloc.dart';
 import 'package:woolet/features/presentation/sheets/account_form_sheet.dart';
+import 'package:woolet/features/presentation/widgets/account_card.dart';
 import 'package:woolet/features/presentation/widgets/custom_bottom_sheet.dart';
 
 class AccountsSheet extends StatelessWidget {
@@ -35,7 +36,6 @@ class AccountsSheet extends StatelessWidget {
             IconButton.filled(
               onPressed:
                   onAddAccount ?? () => _openAccountForm(context: context),
-              tooltip: 'Add account',
               icon: const Icon(LucideIcons.plus),
             ),
           ],
@@ -74,8 +74,11 @@ class AccountsSheet extends StatelessWidget {
                   ...accounts.map(
                     (account) => Padding(
                       padding: const EdgeInsets.only(bottom: 10),
-                      child: _AccountCard(
+                      child: AccountCard(
                         account: account,
+                        currencySymbol: sl<CurrencyController>().symbolForCode(
+                          account.currencyCode,
+                        ),
                         onTap: onAccountTap == null
                             ? null
                             : () => onAccountTap!(account),
@@ -147,81 +150,6 @@ class _AllAccountsCard extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class _AccountCard extends StatelessWidget {
-  const _AccountCard({required this.account, this.onTap, this.onEdit});
-
-  final AccountEntity account;
-  final VoidCallback? onTap;
-  final VoidCallback? onEdit;
-
-  @override
-  Widget build(BuildContext context) {
-    final accentColor = account.colorValue == null
-        ? context.c.primary
-        : Color(account.colorValue!);
-    final icon = AppIcon.fromCode(account.iconCode).icon;
-
-    return Material(
-      color: context.c.surfaceContainer,
-      borderRadius: BorderRadius.circular(12),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        splashFactory: NoSplash.splashFactory,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: accentColor.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: accentColor, size: 22),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      account.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: context.t.titleMedium,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${_formatBalance(account.balanceMinor)} ${account.currencyCode}',
-                      style: context.t.bodyMedium?.copyWith(
-                        color: context.c.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                onPressed: onEdit,
-                tooltip: 'Edit account',
-                icon: const Icon(LucideIcons.pen, size: 19),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  String _formatBalance(int minor) {
-    final amount = minor / 100;
-    return amount == amount.truncateToDouble()
-        ? amount.toStringAsFixed(0)
-        : amount.toStringAsFixed(2);
   }
 }
 

@@ -1,6 +1,12 @@
 {
   "currencies": [
     {
+      "code": "KZT",
+      "name": "Kazakhstani Tenge",
+      "symbol": "₸",
+      "decimal_digits": 2
+    },
+    {
       "code": "USD",
       "name": "US Dollar",
       "symbol": "$",

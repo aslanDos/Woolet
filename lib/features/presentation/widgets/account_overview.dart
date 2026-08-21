@@ -15,9 +15,10 @@ class AccountOverview extends StatelessWidget {
     required this.onPeriodTap,
     required this.onPreviousPeriod,
     required this.onNextPeriod,
+    required this.currencySymbol,
     this.allAccounts = false,
     this.totalBalanceMinor,
-    this.totalCurrencyCode,
+    this.totalCurrencySymbol,
   });
 
   final AccountEntity? account;
@@ -26,9 +27,10 @@ class AccountOverview extends StatelessWidget {
   final VoidCallback onPeriodTap;
   final VoidCallback onPreviousPeriod;
   final VoidCallback onNextPeriod;
+  final String currencySymbol;
   final bool allAccounts;
   final int? totalBalanceMinor;
-  final String? totalCurrencyCode;
+  final String? totalCurrencySymbol;
 
   @override
   Widget build(BuildContext context) {
@@ -92,10 +94,8 @@ class AccountOverview extends StatelessWidget {
     final amount = balance == balance.truncateToDouble()
         ? balance.toStringAsFixed(0)
         : balance.toStringAsFixed(2);
-    final currencyCode = allAccounts
-        ? totalCurrencyCode
-        : account?.currencyCode ?? 'KZT';
-    return currencyCode == null ? amount : '$amount $currencyCode';
+    final symbol = allAccounts ? totalCurrencySymbol : currencySymbol;
+    return symbol == null ? amount : '$amount $symbol';
   }
 }
 

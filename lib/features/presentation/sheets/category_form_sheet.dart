@@ -100,14 +100,12 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
           title: Text(_isEditing ? 'Edit category' : 'New category'),
           leading: IconButton.filled(
             onPressed: state.isProcessing ? null : () => Navigator.pop(context),
-            tooltip: 'Close',
             icon: const Icon(LucideIcons.x),
           ),
           actions: [
             if (_isEditing)
               IconButton.filled(
                 onPressed: state.isProcessing ? null : _delete,
-                tooltip: 'Delete category',
                 style: IconButton.styleFrom(
                   foregroundColor: context.c.error,
                   backgroundColor: context.c.error.withValues(alpha: 0.14),

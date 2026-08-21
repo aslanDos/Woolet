@@ -58,7 +58,7 @@ class AccountSelector extends StatelessWidget {
                 style: context.t.titleMedium?.copyWith(color: textColor),
               ),
             ),
-            Icon(LucideIcons.chevron_up, color: textColor, size: 20),
+            // Icon(LucideIcons.chevron_up, color: textColor, size: 20),
           ],
         ),
       ),
