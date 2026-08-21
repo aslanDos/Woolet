@@ -14,11 +14,13 @@ class AccountsSheet extends StatelessWidget {
     this.onAddAccount,
     this.onAccountTap,
     this.onEditAccount,
+    this.allowAllAccounts = false,
   });
 
   final VoidCallback? onAddAccount;
-  final ValueChanged<AccountEntity>? onAccountTap;
+  final ValueChanged<AccountEntity?>? onAccountTap;
   final ValueChanged<AccountEntity>? onEditAccount;
+  final bool allowAllAccounts;
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +58,15 @@ class AccountsSheet extends StatelessWidget {
               children: [
                 if (state.isProcessing)
                   const LinearProgressIndicator(minHeight: 2),
+                if (allowAllAccounts)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _AllAccountsCard(
+                      onTap: onAccountTap == null
+                          ? null
+                          : () => onAccountTap!(null),
+                    ),
+                  ),
                 ...accounts.map(
                   (account) => Padding(
                     padding: const EdgeInsets.only(bottom: 10),
@@ -73,6 +84,49 @@ class AccountsSheet extends StatelessWidget {
               ],
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _AllAccountsCard extends StatelessWidget {
+  const _AllAccountsCard({this.onTap});
+
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: context.c.surfaceContainer,
+      borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        splashFactory: NoSplash.splashFactory,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: context.c.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  LucideIcons.check_check,
+                  color: context.c.primary,
+                  size: 16,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text('All accounts', style: context.t.titleMedium),
+              ),
+            ],
+          ),
         ),
       ),
     );

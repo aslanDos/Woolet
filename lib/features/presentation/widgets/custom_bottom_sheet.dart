@@ -15,6 +15,7 @@ class CustomBottomSheet extends StatelessWidget {
     this.height,
     this.footer,
     this.footerExtent = 72,
+    this.safeAreaBottom = true,
   });
 
   final Widget child;
@@ -26,6 +27,7 @@ class CustomBottomSheet extends StatelessWidget {
   final double? height;
   final Widget? footer;
   final double footerExtent;
+  final bool safeAreaBottom;
 
   bool get _hasHeader => title != null || leading != null || actions.isNotEmpty;
 
@@ -48,6 +50,7 @@ class CustomBottomSheet extends StatelessWidget {
           );
 
     return SafeArea(
+      bottom: safeAreaBottom,
       child: AnimatedPadding(
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeOut,

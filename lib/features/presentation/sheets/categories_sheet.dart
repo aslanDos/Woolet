@@ -4,9 +4,11 @@ import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:woolet/core/constants/app_enums.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/category_type_x.dart';
+import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/features/domain/entities/category_entity.dart';
 import 'package:woolet/features/presentation/blocs/category/category_bloc.dart';
+import 'package:woolet/features/presentation/sheets/category_form_sheet.dart';
 import 'package:woolet/features/presentation/widgets/category_card.dart';
 import 'package:woolet/features/presentation/widgets/custom_bottom_sheet.dart';
 import 'package:woolet/features/presentation/widgets/type_toggle.dart';
@@ -45,13 +47,20 @@ class _CategoriesSheetView extends StatefulWidget {
 class _CategoriesSheetViewState extends State<_CategoriesSheetView> {
   CategoryType _selectedType = CategoryType.expense;
 
+  Future<void> _openCategoryForm({CategoryEntity? category}) async {
+    final bloc = context.read<CategoryBloc>();
+    await context.openBottomSheet(child: CategoryFormSheet(category: category));
+    if (mounted) bloc.add(const CategoryLoadRequested());
+  }
+
   @override
   Widget build(BuildContext context) {
     return CustomBottomSheet(
-      height: MediaQuery.sizeOf(context).height * 0.78,
+      safeAreaBottom: false,
+      height: MediaQuery.sizeOf(context).height * 0.677,
       actions: [
         IconButton.filled(
-          onPressed: widget.onAddCategory,
+          onPressed: widget.onAddCategory ?? () => _openCategoryForm(),
           tooltip: 'Add category',
           icon: const Icon(LucideIcons.plus),
         ),
@@ -103,7 +112,7 @@ class _CategoriesSheetViewState extends State<_CategoriesSheetView> {
                       child: CategoryCard(
                         category: category,
                         onTap: widget.onCategoryTap == null
-                            ? null
+                            ? () => _openCategoryForm(category: category)
                             : () => widget.onCategoryTap!(category),
                       ),
                     ),
