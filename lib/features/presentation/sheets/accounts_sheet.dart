@@ -3,9 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/di/service_locator.dart';
+import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
 import 'package:woolet/features/presentation/blocs/account/account_bloc.dart';
+import 'package:woolet/features/presentation/sheets/account_form_sheet.dart';
 import 'package:woolet/features/presentation/widgets/custom_bottom_sheet.dart';
 
 class AccountsSheet extends StatelessWidget {
@@ -26,67 +28,82 @@ class AccountsSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => sl<AccountBloc>()..add(const AccountLoadRequested()),
-      child: CustomBottomSheet(
-        title: const Text('Accounts'),
-        actions: [
-          IconButton.filled(
-            onPressed: onAddAccount,
-            tooltip: 'Add account',
-            icon: const Icon(LucideIcons.plus),
+      child: Builder(
+        builder: (context) => CustomBottomSheet(
+          title: const Text('Accounts'),
+          actions: [
+            IconButton.filled(
+              onPressed:
+                  onAddAccount ?? () => _openAccountForm(context: context),
+              tooltip: 'Add account',
+              icon: const Icon(LucideIcons.plus),
+            ),
+          ],
+          child: BlocBuilder<AccountBloc, AccountState>(
+            builder: (context, state) {
+              if (state.status == AccountStatus.loading &&
+                  state.accounts.isEmpty) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (state.status == AccountStatus.failure &&
+                  state.accounts.isEmpty) {
+                return _LoadError(message: state.errorMessage);
+              }
+
+              final accounts = state.accounts
+                  .where((account) => account.visible)
+                  .toList(growable: false);
+
+              if (accounts.isEmpty) return const _EmptyAccounts();
+
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (state.isProcessing)
+                    const LinearProgressIndicator(minHeight: 2),
+                  if (allowAllAccounts)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _AllAccountsCard(
+                        onTap: onAccountTap == null
+                            ? null
+                            : () => onAccountTap!(null),
+                      ),
+                    ),
+                  ...accounts.map(
+                    (account) => Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: _AccountCard(
+                        account: account,
+                        onTap: onAccountTap == null
+                            ? null
+                            : () => onAccountTap!(account),
+                        onEdit: onEditAccount == null
+                            ? () => _openAccountForm(
+                                context: context,
+                                account: account,
+                              )
+                            : () => onEditAccount!(account),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
-        ],
-        child: BlocBuilder<AccountBloc, AccountState>(
-          builder: (context, state) {
-            if (state.status == AccountStatus.loading &&
-                state.accounts.isEmpty) {
-              return const Center(child: CircularProgressIndicator());
-            }
-
-            if (state.status == AccountStatus.failure &&
-                state.accounts.isEmpty) {
-              return _LoadError(message: state.errorMessage);
-            }
-
-            final accounts = state.accounts
-                .where((account) => account.visible)
-                .toList(growable: false);
-
-            if (accounts.isEmpty) return const _EmptyAccounts();
-
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (state.isProcessing)
-                  const LinearProgressIndicator(minHeight: 2),
-                if (allowAllAccounts)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _AllAccountsCard(
-                      onTap: onAccountTap == null
-                          ? null
-                          : () => onAccountTap!(null),
-                    ),
-                  ),
-                ...accounts.map(
-                  (account) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _AccountCard(
-                      account: account,
-                      onTap: onAccountTap == null
-                          ? null
-                          : () => onAccountTap!(account),
-                      onEdit: onEditAccount == null
-                          ? null
-                          : () => onEditAccount!(account),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
         ),
       ),
     );
+  }
+
+  Future<void> _openAccountForm({
+    required BuildContext context,
+    AccountEntity? account,
+  }) async {
+    final bloc = context.read<AccountBloc>();
+    await context.openBottomSheet(child: AccountFormSheet(account: account));
+    if (context.mounted) bloc.add(const AccountLoadRequested());
   }
 }
 

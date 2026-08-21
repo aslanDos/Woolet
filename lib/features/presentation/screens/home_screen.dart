@@ -46,8 +46,10 @@ class _HomeContentState extends State<_HomeContent> {
     setState(() => _period = selected);
   }
 
-  void _openAccountSelector() {
-    context.openBottomSheet(
+  Future<void> _openAccountSelector() async {
+    final accountBloc = context.read<AccountBloc>();
+
+    await context.openBottomSheet(
       child: AccountsSheet(
         allowAllAccounts: true,
         onAccountTap: (account) {
@@ -59,6 +61,8 @@ class _HomeContentState extends State<_HomeContent> {
         },
       ),
     );
+
+    if (mounted) accountBloc.add(const AccountLoadRequested());
   }
 
   @override

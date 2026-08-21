@@ -29,6 +29,11 @@ class IconPicker extends StatelessWidget {
     AppIcon.entertainment,
   ];
 
+  static List<AppIcon> compactIcons(AppIcon selected) {
+    if (basicIcons.contains(selected)) return basicIcons;
+    return [...basicIcons.take(11), selected];
+  }
+
   final List<AppIcon> icons;
   final AppIcon selected;
   final Color color;
@@ -81,6 +86,81 @@ class IconPicker extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class IconPreview extends StatelessWidget {
+  const IconPreview({super.key, required this.icon, required this.color});
+
+  final AppIcon icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        width: 72,
+        height: 72,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Icon(icon.icon, color: color, size: 32),
+      ),
+    );
+  }
+}
+
+class IconPickerField extends StatelessWidget {
+  const IconPickerField({
+    super.key,
+    required this.selected,
+    required this.color,
+    required this.onChanged,
+    required this.onSeeAll,
+  });
+
+  final AppIcon selected;
+  final Color color;
+  final ValueChanged<AppIcon> onChanged;
+  final VoidCallback onSeeAll;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text('Icon', style: context.t.titleLarge),
+            GestureDetector(
+              onTap: onSeeAll,
+              child: Text(
+                'See All',
+                style: context.t.titleSmall?.copyWith(
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: context.c.surfaceContainer,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: IconPicker(
+            icons: IconPicker.compactIcons(selected),
+            selected: selected,
+            color: color,
+            onChanged: onChanged,
+          ),
+        ),
+      ],
     );
   }
 }

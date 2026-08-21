@@ -1,94 +1,95 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
-import 'package:woolet/core/constants/app_enums.dart';
 import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/di/service_locator.dart';
-import 'package:woolet/core/extensions/category_type_x.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/core/theme/app_colors.dart';
 import 'package:woolet/core/utils/uuid.dart';
 import 'package:woolet/core/widgets/alert_dialog.dart';
-import 'package:woolet/features/domain/entities/category_entity.dart';
-import 'package:woolet/features/presentation/blocs/category/category_bloc.dart';
+import 'package:woolet/features/domain/entities/account_entity.dart';
+import 'package:woolet/features/presentation/blocs/account/account_bloc.dart';
 import 'package:woolet/features/presentation/sheets/icon_picker_sheet.dart';
 import 'package:woolet/features/presentation/widgets/button.dart';
 import 'package:woolet/features/presentation/widgets/color_picker.dart';
 import 'package:woolet/features/presentation/widgets/custom_bottom_sheet.dart';
 import 'package:woolet/features/presentation/widgets/icon_picker.dart';
-import 'package:woolet/features/presentation/widgets/type_toggle.dart';
 
-class CategoryFormSheet extends StatelessWidget {
-  const CategoryFormSheet({super.key, this.category, this.onSaved});
+class AccountFormSheet extends StatelessWidget {
+  const AccountFormSheet({super.key, this.account, this.onSaved});
 
-  final CategoryEntity? category;
-  final ValueChanged<CategoryEntity>? onSaved;
+  final AccountEntity? account;
+  final ValueChanged<AccountEntity>? onSaved;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => sl<CategoryBloc>(),
-      child: _CategoryFormView(category: category, onSaved: onSaved),
+      create: (_) => sl<AccountBloc>(),
+      child: _AccountFormView(account: account, onSaved: onSaved),
     );
   }
 }
 
-class _CategoryFormView extends StatefulWidget {
-  const _CategoryFormView({required this.category, required this.onSaved});
+class _AccountFormView extends StatefulWidget {
+  const _AccountFormView({required this.account, required this.onSaved});
 
-  final CategoryEntity? category;
-  final ValueChanged<CategoryEntity>? onSaved;
+  final AccountEntity? account;
+  final ValueChanged<AccountEntity>? onSaved;
 
   @override
-  State<_CategoryFormView> createState() => _CategoryFormViewState();
+  State<_AccountFormView> createState() => _AccountFormViewState();
 }
 
-class _CategoryFormViewState extends State<_CategoryFormView> {
+class _AccountFormViewState extends State<_AccountFormView> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
-  late CategoryType _type;
+  late final TextEditingController _balanceController;
   late AppIcon _icon;
   late Color _color;
-  CategoryEntity? _submittedCategory;
+  AccountEntity? _submittedAccount;
   bool _deleting = false;
 
-  bool get _isEditing => widget.category != null;
+  bool get _isEditing => widget.account != null;
+  String get _currencyCode => widget.account?.currencyCode ?? 'KZT';
 
   @override
   void initState() {
     super.initState();
-    final category = widget.category;
-    _nameController = TextEditingController(text: category?.name ?? '');
-    _type = category?.type ?? CategoryType.expense;
-    _icon = AppIcon.fromCode(category?.iconCode ?? AppIcon.wallet.code);
-    _color = category?.colorValue == null
-        ? _type.backgroundColor
-        : Color(category!.colorValue!);
+    final account = widget.account;
+    _nameController = TextEditingController(text: account?.name ?? '');
+    _balanceController = TextEditingController(
+      text: _formatBalance(account?.balanceMinor ?? 0),
+    );
+    _icon = AppIcon.fromCode(account?.iconCode ?? AppIcon.wallet.code);
+    _color = account?.colorValue == null
+        ? const Color(0xFF2563EB)
+        : Color(account!.colorValue!);
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _balanceController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<CategoryBloc, CategoryState>(
+    return BlocConsumer<AccountBloc, AccountState>(
       listenWhen: (previous, current) =>
           previous.isProcessing && !current.isProcessing,
       listener: (context, state) {
-        if (state.status == CategoryStatus.failure) return;
-
+        if (state.status == AccountStatus.failure) return;
         if (_deleting) {
           Navigator.pop(context);
           return;
         }
 
-        final category = _submittedCategory;
-        if (category != null) widget.onSaved?.call(category);
-        Navigator.pop(context, category);
+        final account = _submittedAccount;
+        if (account != null) widget.onSaved?.call(account);
+        Navigator.pop(context, account);
       },
       builder: (context, state) {
         final fieldBorder = OutlineInputBorder(
@@ -97,7 +98,7 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
         );
 
         return CustomBottomSheet(
-          title: Text(_isEditing ? 'Edit category' : 'New category'),
+          title: Text(_isEditing ? 'Edit account' : 'New account'),
           leading: IconButton.filled(
             onPressed: state.isProcessing ? null : () => Navigator.pop(context),
             tooltip: 'Close',
@@ -107,7 +108,7 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
             if (_isEditing)
               IconButton.filled(
                 onPressed: state.isProcessing ? null : _delete,
-                tooltip: 'Delete category',
+                tooltip: 'Delete account',
                 style: IconButton.styleFrom(
                   foregroundColor: context.c.error,
                   backgroundColor: context.c.error.withValues(alpha: 0.14),
@@ -120,7 +121,7 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
             child: Padding(
               padding: const EdgeInsets.only(top: 10),
               child: Button(
-                label: _isEditing ? 'Save changes' : 'Create category',
+                label: _isEditing ? 'Save changes' : 'Create account',
                 isLoading: state.isProcessing,
                 onPressed: _submit,
               ),
@@ -131,21 +132,6 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TypeToggle<CategoryType>(
-                  items: CategoryType.values
-                      .map(
-                        (type) => TypeToggleItem(
-                          value: type,
-                          label: type.label,
-                          icon: type.icon,
-                          selectedBackgroundColor: type.backgroundColor,
-                        ),
-                      )
-                      .toList(growable: false),
-                  selected: _type,
-                  onChanged: (type) => setState(() => _type = type),
-                ),
-                const SizedBox(height: 24),
                 IconPreview(icon: _icon, color: _color),
                 const SizedBox(height: 24),
                 Text('Name', style: context.t.titleLarge),
@@ -153,27 +139,38 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
                 TextFormField(
                   controller: _nameController,
                   autofocus: !_isEditing,
-                  maxLength: CategoryEntity.maxNameLength,
+                  maxLength: AccountEntity.maxNameLength,
                   textCapitalization: TextCapitalization.sentences,
                   style: context.t.bodyMedium,
-                  decoration: InputDecoration(
-                    hintText: 'Category name',
-                    counterText: '',
-                    filled: true,
-                    fillColor: context.c.surfaceContainer,
-                    contentPadding: const EdgeInsets.all(12),
+                  decoration: _fieldDecoration(
+                    context,
                     border: fieldBorder,
-                    enabledBorder: fieldBorder,
-                    focusedBorder: fieldBorder,
-                    errorBorder: fieldBorder,
-                    focusedErrorBorder: fieldBorder,
+                    hintText: 'Account name',
+                  ).copyWith(counterText: ''),
+                  validator: (value) => value == null || value.trim().isEmpty
+                      ? 'Enter an account name'
+                      : null,
+                ),
+                const SizedBox(height: 24),
+                Text('Balance', style: context.t.titleLarge),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _balanceController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
                   ),
-                  onChanged: (_) => setState(() {}),
+                  inputFormatters: [_BalanceInputFormatter()],
+                  style: context.t.bodyMedium,
+                  decoration: _fieldDecoration(
+                    context,
+                    border: fieldBorder,
+                    hintText: '0',
+                  ).copyWith(suffixText: _currencyCode),
                   validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Enter a category name';
-                    }
-                    return null;
+                    final normalized = value?.replaceFirst(',', '.');
+                    return double.tryParse(normalized ?? '') == null
+                        ? 'Enter a valid balance'
+                        : null;
                   },
                 ),
                 const SizedBox(height: 24),
@@ -209,28 +206,50 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
     );
   }
 
+  InputDecoration _fieldDecoration(
+    BuildContext context, {
+    required OutlineInputBorder border,
+    required String hintText,
+  }) {
+    return InputDecoration(
+      hintText: hintText,
+      filled: true,
+      fillColor: context.c.surfaceContainer,
+      contentPadding: const EdgeInsets.all(12),
+      border: border,
+      enabledBorder: border,
+      focusedBorder: border,
+      errorBorder: border,
+      focusedErrorBorder: border,
+    );
+  }
+
   void _submit() {
     FocusManager.instance.primaryFocus?.unfocus();
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
-    final original = widget.category;
-    final category = CategoryEntity(
+    final original = widget.account;
+    final balance = double.parse(
+      _balanceController.text.replaceFirst(',', '.'),
+    );
+    final account = AccountEntity(
       uuid: original?.uuid ?? createUuidV4(),
       name: _nameController.text.trim(),
       sortOrder: original?.sortOrder ?? -1,
       iconCode: _icon.code,
+      currencyCode: _currencyCode,
+      balanceMinor: (balance * 100).round(),
       createdAt: original?.createdAt ?? DateTime.now().toUtc(),
-      type: _type,
       colorValue: _color.toARGB32(),
       visible: original?.visible ?? true,
     );
 
     _deleting = false;
-    _submittedCategory = category;
-    context.read<CategoryBloc>().add(
+    _submittedAccount = account;
+    context.read<AccountBloc>().add(
       original == null
-          ? CategoryCreateRequested(category)
-          : CategoryUpdateRequested(category),
+          ? AccountCreateRequested(account)
+          : AccountUpdateRequested(account),
     );
   }
 
@@ -244,19 +263,38 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
   }
 
   Future<void> _delete() async {
-    final category = widget.category;
-    if (category == null) return;
+    final account = widget.account;
+    if (account == null) return;
 
     final confirmed = await AppAlertDialog.show(
       context,
-      title: 'Delete category?',
-      message: 'Are you sure you want to delete “${category.name}”?',
+      title: 'Delete account?',
+      message: 'Are you sure you want to delete “${account.name}”?',
       confirmLabel: 'Delete',
       isDestructive: true,
     );
     if (!confirmed || !mounted) return;
 
     _deleting = true;
-    context.read<CategoryBloc>().add(CategoryDeleteRequested(category.uuid));
+    context.read<AccountBloc>().add(AccountDeleteRequested(account.uuid));
+  }
+
+  String _formatBalance(int minor) {
+    final amount = minor / 100;
+    return amount == amount.truncateToDouble()
+        ? amount.toStringAsFixed(0)
+        : amount.toStringAsFixed(2);
+  }
+}
+
+class _BalanceInputFormatter extends TextInputFormatter {
+  static final _pattern = RegExp(r'^\d*(?:[.,]\d{0,2})?$');
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    return _pattern.hasMatch(newValue.text) ? newValue : oldValue;
   }
 }

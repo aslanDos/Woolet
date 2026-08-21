@@ -25,6 +25,21 @@ class AppColors {
 
   static const Color blue0 = Color(0xFF2563EB);
   static const Color blue1 = Color(0xFF60A5FA);
+
+  static const List<Color> pickerColors = [
+    Color(0xFF16A34A),
+    Color(0xFF0D9488),
+    Color(0xFF2563EB),
+    Color(0xFF4F46E5),
+    Color(0xFF7C3AED),
+    Color(0xFFC026D3),
+    Color(0xFFE11D48),
+    Color(0xFFDC2626),
+    Color(0xFFEA580C),
+    Color(0xFFD97706),
+    Color(0xFF64748B),
+    Color(0xFF475569),
+  ];
 }
 
 @immutable
