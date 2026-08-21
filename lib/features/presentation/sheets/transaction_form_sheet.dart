@@ -1,14 +1,22 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
-import 'package:go_router/go_router.dart';
 import 'package:woolet/core/constants/app_enums.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/core/extensions/transaction_type_x.dart';
 import 'package:woolet/core/settings/currency_controller.dart';
-import 'package:woolet/features/domain/entities/category_entity.dart';
+import 'package:woolet/core/utils/uuid.dart';
+import 'package:woolet/core/widgets/alert_dialog.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
+import 'package:woolet/features/domain/entities/category_entity.dart';
+import 'package:woolet/features/domain/entities/transaction_entity.dart';
+import 'package:woolet/features/domain/repositories/account_repository.dart';
+import 'package:woolet/features/domain/repositories/category_repository.dart';
+import 'package:woolet/features/presentation/blocs/transaction/transaction_bloc.dart';
 import 'package:woolet/features/presentation/sheets/accounts_sheet.dart';
 import 'package:woolet/features/presentation/widgets/account_selector.dart';
 import 'package:woolet/features/presentation/widgets/amount_field.dart';
@@ -24,101 +32,121 @@ class TransactionFormSheet extends StatefulWidget {
   const TransactionFormSheet({
     super.key,
     this.initialTransactionType = TransactionType.expense,
+    this.transaction,
+    this.initialAccount,
   });
 
   final TransactionType initialTransactionType;
+  final TransactionEntity? transaction;
+  final AccountEntity? initialAccount;
 
   @override
   State<TransactionFormSheet> createState() => _TransactionFormSheetState();
 }
 
-class _TransactionFormSheetState extends State<TransactionFormSheet> {
-  AccountEntity? _selectedAccount;
-
-  Future<void> _selectAccount() async {
-    await context.openBottomSheet(
-      child: AccountsSheet(
-        onAccountTap: (account) {
-          setState(() => _selectedAccount = account);
-          Navigator.of(context).pop();
-        },
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final account = _selectedAccount;
-
-    return CustomBottomSheet(
-      height: MediaQuery.sizeOf(context).height * 0.9,
-      footer: Button(
-        label: 'Save',
-        onPressed: () {
-          FocusManager.instance.primaryFocus?.unfocus();
-          context.pop();
-        },
-      ),
-      leading: IconButton.filled(
-        onPressed: () {
-          FocusManager.instance.primaryFocus?.unfocus();
-          context.pop();
-        },
-        icon: Icon(LucideIcons.x),
-      ),
-      title: AccountSelector(account: account, onTap: _selectAccount),
-      actions: [
-        IconButton.filled(
-          onPressed: () => {},
-          icon: Icon(LucideIcons.trash_2),
-          style: IconButton.styleFrom(
-            foregroundColor: context.c.error,
-            backgroundColor: context.c.error.withValues(alpha: 0.3),
-          ),
-        ),
-      ],
-      child: _TransactionForm(
-        initialTransactionType: widget.initialTransactionType,
-        currencySymbol: account == null
-            ? sl<CurrencyController>().value.symbol
-            : sl<CurrencyController>().symbolForCode(account.currencyCode),
-      ),
-    );
-  }
-}
-
-class _TransactionForm extends StatefulWidget {
-  const _TransactionForm({
-    required this.initialTransactionType,
-    required this.currencySymbol,
-  });
-
-  final TransactionType initialTransactionType;
-  final String currencySymbol;
-
-  @override
-  State<_TransactionForm> createState() => _TransactionFormState();
-}
-
-class _TransactionFormState extends State<_TransactionForm> {
-  late TransactionType _selectedType;
-  double _amount = 0;
-  DateTime _selectedDate = DateTime.now();
-  CategoryEntity? _selectedCategory;
+class _TransactionFormSheetState extends State<TransactionFormSheet>
+    with SingleTickerProviderStateMixin {
+  late TransactionType _type;
+  late double _amount;
+  late DateTime _date;
+  late final TextEditingController _noteController;
+  AccountEntity? _account;
   AccountEntity? _toAccount;
+  CategoryEntity? _category;
+  List<AccountEntity> _accounts = const [];
+  bool _deleting = false;
+  OverlayEntry? _errorToast;
+  Timer? _errorToastTimer;
+  late final AnimationController _errorToastController;
+
+  bool get _isEditing => widget.transaction != null;
 
   @override
   void initState() {
     super.initState();
-    _selectedType = widget.initialTransactionType;
+    final value = widget.transaction;
+    _type = value?.type ?? widget.initialTransactionType;
+    _amount = (value?.amountMinor ?? 0) / 100;
+    _date = value?.occurredAt ?? DateTime.now();
+    _account = widget.initialAccount;
+    _noteController = TextEditingController(text: value?.note ?? '');
+    _errorToastController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 240),
+      reverseDuration: const Duration(milliseconds: 180),
+    );
+    _loadLinkedValues(value);
   }
 
-  Future<void> _selectToAccount() async {
+  Future<void> _loadLinkedValues(TransactionEntity? value) async {
+    final accounts = await sl<AccountRepository>().getAccounts();
+    final categories = value == null
+        ? null
+        : await sl<CategoryRepository>().getCategories();
+    if (!mounted) return;
+    accounts.fold(
+      (_) {},
+      (items) => setState(() {
+        _accounts = items.where((account) => account.visible).toList();
+        _account = value == null
+            ? widget.initialAccount ??
+                  (_accounts.isEmpty ? null : _accounts.first)
+            : _findAccount(_accounts, value.accountUuid);
+        _toAccount = value == null
+            ? _defaultToAccount()
+            : _findAccount(_accounts, value.toAccountUuid);
+      }),
+    );
+    categories?.fold(
+      (_) {},
+      (items) => setState(() {
+        for (final item in items) {
+          if (item.uuid == value!.categoryUuid) _category = item;
+        }
+      }),
+    );
+  }
+
+  AccountEntity? _findAccount(List<AccountEntity> values, String? uuid) {
+    for (final value in values) {
+      if (value.uuid == uuid) return value;
+    }
+    return null;
+  }
+
+  AccountEntity? _defaultToAccount() {
+    if (_type != TransactionType.transfer || _account == null) return null;
+    for (final account in _accounts) {
+      if (account.uuid != _account!.uuid) return account;
+    }
+    return null;
+  }
+
+  @override
+  void dispose() {
+    _hideErrorToast(immediately: true);
+    _errorToastController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _selectAccount({required bool destination}) async {
     await context.openBottomSheet(
       child: AccountsSheet(
         onAccountTap: (account) {
-          setState(() => _toAccount = account);
-          Navigator.of(context).pop();
+          if (account == null) return;
+          setState(() {
+            if (destination) _toAccount = account;
+            if (!destination) {
+              _account = account;
+              if (_type == TransactionType.transfer &&
+                  _toAccount?.uuid == account.uuid) {
+                _toAccount = _defaultToAccount();
+              }
+            }
+            _hideErrorToast();
+          });
+          Navigator.pop(context);
         },
       ),
     );
@@ -126,65 +154,251 @@ class _TransactionFormState extends State<_TransactionForm> {
 
   @override
   Widget build(BuildContext context) {
-    final categoryType = switch (_selectedType) {
-      TransactionType.income => CategoryType.income,
-      TransactionType.expense => CategoryType.expense,
-      TransactionType.transfer => null,
-    };
-
-    return SizedBox(
-      width: double.infinity,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TypeToggle<TransactionType>(
-            items: TransactionType.values
-                .map(
-                  (type) => TypeToggleItem(
-                    value: type,
-                    label: type.label,
-                    icon: type.icon,
-                    selectedBackgroundColor: type.backgroundColor,
-                  ),
-                )
-                .toList(),
-            selected: _selectedType,
-            onChanged: (type) {
-              setState(() {
-                _selectedType = type;
-                _selectedCategory = null;
-              });
-            },
-          ),
-          const SizedBox(height: 56),
-          AmountField(
-            initialValue: _amount,
-            currencySymbol: widget.currencySymbol,
-            onChanged: (amount) => _amount = amount,
-          ),
-          const SizedBox(height: 12),
-          DateSelector(
-            value: _selectedDate,
-            onChanged: (date) => setState(() => _selectedDate = date),
-          ),
-          const SizedBox(height: 56),
-          if (categoryType == null) ...[
-            ToAccountField(account: _toAccount, onTap: _selectToAccount),
-            const SizedBox(height: 24),
-          ],
-          NoteField(),
-          if (categoryType != null) ...[
-            const SizedBox(height: 24),
-            CategorySelector(
-              type: categoryType,
-              selected: _selectedCategory,
-              onChanged: (category) {
-                setState(() => _selectedCategory = category);
-              },
+    return BlocConsumer<TransactionBloc, TransactionState>(
+      listenWhen: (previous, current) =>
+          previous.isProcessing && !current.isProcessing,
+      listener: (context, state) {
+        if (state.status == TransactionStatus.failure) {
+          _showErrorToast(state.errorMessage ?? 'Could not save transaction');
+        } else {
+          Navigator.pop(context, !_deleting);
+        }
+      },
+      builder: (context, state) => CustomBottomSheet(
+        height: MediaQuery.sizeOf(context).height * 0.9,
+        footer: Button(
+          label: _isEditing ? 'Save changes' : 'Save',
+          isLoading: state.isProcessing,
+          onPressed: _submit,
+        ),
+        leading: IconButton.filled(
+          onPressed: state.isProcessing ? null : () => Navigator.pop(context),
+          icon: const Icon(LucideIcons.x),
+        ),
+        title: AccountSelector(
+          account: _account,
+          onTap: () => _selectAccount(destination: false),
+        ),
+        actions: [
+          if (_isEditing)
+            IconButton.filled(
+              onPressed: state.isProcessing ? null : _delete,
+              icon: const Icon(LucideIcons.trash_2),
+              style: IconButton.styleFrom(
+                foregroundColor: context.c.error,
+                backgroundColor: context.c.error.withValues(alpha: 0.3),
+              ),
             ),
-          ],
         ],
+        child: SizedBox(
+          width: double.infinity,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TypeToggle<TransactionType>(
+                items: TransactionType.values
+                    .map(
+                      (type) => TypeToggleItem(
+                        value: type,
+                        label: type.label,
+                        icon: type.icon,
+                        selectedBackgroundColor: type.backgroundColor,
+                      ),
+                    )
+                    .toList(),
+                selected: _type,
+                onChanged: (type) => setState(() {
+                  _type = type;
+                  _category = null;
+                  _toAccount = type == TransactionType.transfer
+                      ? _defaultToAccount()
+                      : null;
+                  _hideErrorToast();
+                }),
+              ),
+              const SizedBox(height: 56),
+              AmountField(
+                initialValue: _amount,
+                currencySymbol: _account == null
+                    ? sl<CurrencyController>().value.symbol
+                    : sl<CurrencyController>().symbolForCode(
+                        _account!.currencyCode,
+                      ),
+                onChanged: (amount) => _amount = amount,
+              ),
+              const SizedBox(height: 12),
+              DateSelector(
+                value: _date,
+                onChanged: (date) => setState(() => _date = date),
+              ),
+              const SizedBox(height: 56),
+              if (_type == TransactionType.transfer) ...[
+                ToAccountField(
+                  account: _toAccount,
+                  onTap: () => _selectAccount(destination: true),
+                ),
+                const SizedBox(height: 24),
+              ],
+              NoteField(controller: _noteController),
+              if (_type != TransactionType.transfer) ...[
+                const SizedBox(height: 24),
+                CategorySelector(
+                  type: _type == TransactionType.income
+                      ? CategoryType.income
+                      : CategoryType.expense,
+                  selected: _category,
+                  onChanged: (value) => setState(() {
+                    _category = value;
+                    _hideErrorToast();
+                  }),
+                ),
+              ],
+              const SizedBox(height: 24),
+            ],
+          ),
+        ),
       ),
+    );
+  }
+
+  void _submit() {
+    FocusManager.instance.primaryFocus?.unfocus();
+    final account = _account;
+    String? error;
+    if (_amount <= 0) error = 'Amount can not be 0';
+    if (account == null) error = 'Select an account';
+    if (_type == TransactionType.transfer && _toAccount == null) {
+      error = 'Select a destination account';
+    }
+    if (_type == TransactionType.transfer &&
+        _toAccount != null &&
+        _toAccount!.uuid == account?.uuid) {
+      error = 'Select a different destination account';
+    }
+    if (_type != TransactionType.transfer && _category == null) {
+      error = 'Select a category';
+    }
+    if (error != null) {
+      _showErrorToast(error);
+      return;
+    }
+
+    final original = widget.transaction;
+    final value = TransactionEntity(
+      uuid: original?.uuid ?? createUuidV4(),
+      type: _type,
+      amountMinor: (_amount * 100).round(),
+      accountUuid: account!.uuid,
+      toAccountUuid: _type == TransactionType.transfer
+          ? _toAccount!.uuid
+          : null,
+      categoryUuid: _type == TransactionType.transfer ? null : _category!.uuid,
+      note: _noteController.text.trim(),
+      occurredAt: _date,
+      createdAt: original?.createdAt ?? DateTime.now().toUtc(),
+    );
+    context.read<TransactionBloc>().add(
+      original == null
+          ? TransactionCreateRequested(value)
+          : TransactionUpdateRequested(value),
+    );
+  }
+
+  void _showErrorToast(String message) {
+    _hideErrorToast(immediately: true);
+    final overlay = Overlay.of(context, rootOverlay: true);
+    final animation = CurvedAnimation(
+      parent: _errorToastController,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+    _errorToast = OverlayEntry(
+      builder: (overlayContext) => Positioned(
+        top: MediaQuery.paddingOf(overlayContext).top + 16,
+        left: 16,
+        right: 16,
+        child: FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, -0.35),
+              end: Offset.zero,
+            ).animate(animation),
+            child: Center(
+              child: Material(
+                color: overlayContext.c.errorContainer,
+                elevation: 8,
+                shadowColor: Colors.black.withValues(alpha: 0.24),
+                borderRadius: BorderRadius.circular(16),
+                child: InkWell(
+                  splashFactory: NoSplash.splashFactory,
+
+                  onTap: _hideErrorToast,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          LucideIcons.circle_alert,
+                          size: 20,
+                          color: overlayContext.c.onErrorContainer,
+                        ),
+                        const SizedBox(width: 10),
+                        Flexible(
+                          child: Text(
+                            message,
+                            style: overlayContext.t.titleMedium?.copyWith(
+                              color: overlayContext.c.onErrorContainer,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    overlay.insert(_errorToast!);
+    _errorToastController.forward(from: 0);
+    _errorToastTimer = Timer(const Duration(seconds: 3), _hideErrorToast);
+  }
+
+  Future<void> _hideErrorToast({bool immediately = false}) async {
+    _errorToastTimer?.cancel();
+    _errorToastTimer = null;
+    final toast = _errorToast;
+    if (toast == null) return;
+    _errorToast = null;
+    if (!immediately && _errorToastController.value > 0) {
+      await _errorToastController.reverse();
+    }
+    toast.remove();
+    if (_errorToast == null) _errorToastController.reset();
+  }
+
+  Future<void> _delete() async {
+    final confirmed = await AppAlertDialog.show(
+      context,
+      title: 'Delete transaction?',
+      message:
+          'This transaction will be permanently deleted and the account balance will be adjusted.',
+      confirmLabel: 'Delete',
+      isDestructive: true,
+    );
+    if (!confirmed || !mounted) return;
+
+    _deleting = true;
+    context.read<TransactionBloc>().add(
+      TransactionDeleteRequested(widget.transaction!.uuid),
     );
   }
 }

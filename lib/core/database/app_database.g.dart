@@ -1103,16 +1103,613 @@ class AccountsCompanion extends UpdateCompanion<AccountRow> {
   }
 }
 
+class $TransactionsTable extends Transactions
+    with TableInfo<$TransactionsTable, TransactionRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TransactionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid = GeneratedColumn<String>(
+    'uuid',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _amountMinorMeta = const VerificationMeta(
+    'amountMinor',
+  );
+  @override
+  late final GeneratedColumn<int> amountMinor = GeneratedColumn<int>(
+    'amount_minor',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _accountUuidMeta = const VerificationMeta(
+    'accountUuid',
+  );
+  @override
+  late final GeneratedColumn<String> accountUuid = GeneratedColumn<String>(
+    'account_uuid',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES accounts (uuid)',
+    ),
+  );
+  static const VerificationMeta _toAccountUuidMeta = const VerificationMeta(
+    'toAccountUuid',
+  );
+  @override
+  late final GeneratedColumn<String> toAccountUuid = GeneratedColumn<String>(
+    'to_account_uuid',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES accounts (uuid)',
+    ),
+  );
+  static const VerificationMeta _categoryUuidMeta = const VerificationMeta(
+    'categoryUuid',
+  );
+  @override
+  late final GeneratedColumn<String> categoryUuid = GeneratedColumn<String>(
+    'category_uuid',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES categories (uuid)',
+    ),
+  );
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+    'note',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _occurredAtMeta = const VerificationMeta(
+    'occurredAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> occurredAt = GeneratedColumn<DateTime>(
+    'occurred_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    uuid,
+    type,
+    amountMinor,
+    accountUuid,
+    toAccountUuid,
+    categoryUuid,
+    note,
+    occurredAt,
+    createdAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'transactions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TransactionRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('uuid')) {
+      context.handle(
+        _uuidMeta,
+        uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_uuidMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('amount_minor')) {
+      context.handle(
+        _amountMinorMeta,
+        amountMinor.isAcceptableOrUnknown(
+          data['amount_minor']!,
+          _amountMinorMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_amountMinorMeta);
+    }
+    if (data.containsKey('account_uuid')) {
+      context.handle(
+        _accountUuidMeta,
+        accountUuid.isAcceptableOrUnknown(
+          data['account_uuid']!,
+          _accountUuidMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_accountUuidMeta);
+    }
+    if (data.containsKey('to_account_uuid')) {
+      context.handle(
+        _toAccountUuidMeta,
+        toAccountUuid.isAcceptableOrUnknown(
+          data['to_account_uuid']!,
+          _toAccountUuidMeta,
+        ),
+      );
+    }
+    if (data.containsKey('category_uuid')) {
+      context.handle(
+        _categoryUuidMeta,
+        categoryUuid.isAcceptableOrUnknown(
+          data['category_uuid']!,
+          _categoryUuidMeta,
+        ),
+      );
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+        _noteMeta,
+        note.isAcceptableOrUnknown(data['note']!, _noteMeta),
+      );
+    }
+    if (data.containsKey('occurred_at')) {
+      context.handle(
+        _occurredAtMeta,
+        occurredAt.isAcceptableOrUnknown(data['occurred_at']!, _occurredAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_occurredAtMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {uuid};
+  @override
+  TransactionRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TransactionRow(
+      uuid: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}uuid'],
+      )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      amountMinor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}amount_minor'],
+      )!,
+      accountUuid: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}account_uuid'],
+      )!,
+      toAccountUuid: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}to_account_uuid'],
+      ),
+      categoryUuid: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}category_uuid'],
+      ),
+      note: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}note'],
+      )!,
+      occurredAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}occurred_at'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+    );
+  }
+
+  @override
+  $TransactionsTable createAlias(String alias) {
+    return $TransactionsTable(attachedDatabase, alias);
+  }
+}
+
+class TransactionRow extends DataClass implements Insertable<TransactionRow> {
+  final String uuid;
+  final String type;
+  final int amountMinor;
+  final String accountUuid;
+  final String? toAccountUuid;
+  final String? categoryUuid;
+  final String note;
+  final DateTime occurredAt;
+  final DateTime createdAt;
+  const TransactionRow({
+    required this.uuid,
+    required this.type,
+    required this.amountMinor,
+    required this.accountUuid,
+    this.toAccountUuid,
+    this.categoryUuid,
+    required this.note,
+    required this.occurredAt,
+    required this.createdAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['uuid'] = Variable<String>(uuid);
+    map['type'] = Variable<String>(type);
+    map['amount_minor'] = Variable<int>(amountMinor);
+    map['account_uuid'] = Variable<String>(accountUuid);
+    if (!nullToAbsent || toAccountUuid != null) {
+      map['to_account_uuid'] = Variable<String>(toAccountUuid);
+    }
+    if (!nullToAbsent || categoryUuid != null) {
+      map['category_uuid'] = Variable<String>(categoryUuid);
+    }
+    map['note'] = Variable<String>(note);
+    map['occurred_at'] = Variable<DateTime>(occurredAt);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    return map;
+  }
+
+  TransactionsCompanion toCompanion(bool nullToAbsent) {
+    return TransactionsCompanion(
+      uuid: Value(uuid),
+      type: Value(type),
+      amountMinor: Value(amountMinor),
+      accountUuid: Value(accountUuid),
+      toAccountUuid: toAccountUuid == null && nullToAbsent
+          ? const Value.absent()
+          : Value(toAccountUuid),
+      categoryUuid: categoryUuid == null && nullToAbsent
+          ? const Value.absent()
+          : Value(categoryUuid),
+      note: Value(note),
+      occurredAt: Value(occurredAt),
+      createdAt: Value(createdAt),
+    );
+  }
+
+  factory TransactionRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TransactionRow(
+      uuid: serializer.fromJson<String>(json['uuid']),
+      type: serializer.fromJson<String>(json['type']),
+      amountMinor: serializer.fromJson<int>(json['amountMinor']),
+      accountUuid: serializer.fromJson<String>(json['accountUuid']),
+      toAccountUuid: serializer.fromJson<String?>(json['toAccountUuid']),
+      categoryUuid: serializer.fromJson<String?>(json['categoryUuid']),
+      note: serializer.fromJson<String>(json['note']),
+      occurredAt: serializer.fromJson<DateTime>(json['occurredAt']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'uuid': serializer.toJson<String>(uuid),
+      'type': serializer.toJson<String>(type),
+      'amountMinor': serializer.toJson<int>(amountMinor),
+      'accountUuid': serializer.toJson<String>(accountUuid),
+      'toAccountUuid': serializer.toJson<String?>(toAccountUuid),
+      'categoryUuid': serializer.toJson<String?>(categoryUuid),
+      'note': serializer.toJson<String>(note),
+      'occurredAt': serializer.toJson<DateTime>(occurredAt),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+    };
+  }
+
+  TransactionRow copyWith({
+    String? uuid,
+    String? type,
+    int? amountMinor,
+    String? accountUuid,
+    Value<String?> toAccountUuid = const Value.absent(),
+    Value<String?> categoryUuid = const Value.absent(),
+    String? note,
+    DateTime? occurredAt,
+    DateTime? createdAt,
+  }) => TransactionRow(
+    uuid: uuid ?? this.uuid,
+    type: type ?? this.type,
+    amountMinor: amountMinor ?? this.amountMinor,
+    accountUuid: accountUuid ?? this.accountUuid,
+    toAccountUuid: toAccountUuid.present
+        ? toAccountUuid.value
+        : this.toAccountUuid,
+    categoryUuid: categoryUuid.present ? categoryUuid.value : this.categoryUuid,
+    note: note ?? this.note,
+    occurredAt: occurredAt ?? this.occurredAt,
+    createdAt: createdAt ?? this.createdAt,
+  );
+  TransactionRow copyWithCompanion(TransactionsCompanion data) {
+    return TransactionRow(
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      type: data.type.present ? data.type.value : this.type,
+      amountMinor: data.amountMinor.present
+          ? data.amountMinor.value
+          : this.amountMinor,
+      accountUuid: data.accountUuid.present
+          ? data.accountUuid.value
+          : this.accountUuid,
+      toAccountUuid: data.toAccountUuid.present
+          ? data.toAccountUuid.value
+          : this.toAccountUuid,
+      categoryUuid: data.categoryUuid.present
+          ? data.categoryUuid.value
+          : this.categoryUuid,
+      note: data.note.present ? data.note.value : this.note,
+      occurredAt: data.occurredAt.present
+          ? data.occurredAt.value
+          : this.occurredAt,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TransactionRow(')
+          ..write('uuid: $uuid, ')
+          ..write('type: $type, ')
+          ..write('amountMinor: $amountMinor, ')
+          ..write('accountUuid: $accountUuid, ')
+          ..write('toAccountUuid: $toAccountUuid, ')
+          ..write('categoryUuid: $categoryUuid, ')
+          ..write('note: $note, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('createdAt: $createdAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    uuid,
+    type,
+    amountMinor,
+    accountUuid,
+    toAccountUuid,
+    categoryUuid,
+    note,
+    occurredAt,
+    createdAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TransactionRow &&
+          other.uuid == this.uuid &&
+          other.type == this.type &&
+          other.amountMinor == this.amountMinor &&
+          other.accountUuid == this.accountUuid &&
+          other.toAccountUuid == this.toAccountUuid &&
+          other.categoryUuid == this.categoryUuid &&
+          other.note == this.note &&
+          other.occurredAt == this.occurredAt &&
+          other.createdAt == this.createdAt);
+}
+
+class TransactionsCompanion extends UpdateCompanion<TransactionRow> {
+  final Value<String> uuid;
+  final Value<String> type;
+  final Value<int> amountMinor;
+  final Value<String> accountUuid;
+  final Value<String?> toAccountUuid;
+  final Value<String?> categoryUuid;
+  final Value<String> note;
+  final Value<DateTime> occurredAt;
+  final Value<DateTime> createdAt;
+  final Value<int> rowid;
+  const TransactionsCompanion({
+    this.uuid = const Value.absent(),
+    this.type = const Value.absent(),
+    this.amountMinor = const Value.absent(),
+    this.accountUuid = const Value.absent(),
+    this.toAccountUuid = const Value.absent(),
+    this.categoryUuid = const Value.absent(),
+    this.note = const Value.absent(),
+    this.occurredAt = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TransactionsCompanion.insert({
+    required String uuid,
+    required String type,
+    required int amountMinor,
+    required String accountUuid,
+    this.toAccountUuid = const Value.absent(),
+    this.categoryUuid = const Value.absent(),
+    this.note = const Value.absent(),
+    required DateTime occurredAt,
+    required DateTime createdAt,
+    this.rowid = const Value.absent(),
+  }) : uuid = Value(uuid),
+       type = Value(type),
+       amountMinor = Value(amountMinor),
+       accountUuid = Value(accountUuid),
+       occurredAt = Value(occurredAt),
+       createdAt = Value(createdAt);
+  static Insertable<TransactionRow> custom({
+    Expression<String>? uuid,
+    Expression<String>? type,
+    Expression<int>? amountMinor,
+    Expression<String>? accountUuid,
+    Expression<String>? toAccountUuid,
+    Expression<String>? categoryUuid,
+    Expression<String>? note,
+    Expression<DateTime>? occurredAt,
+    Expression<DateTime>? createdAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (uuid != null) 'uuid': uuid,
+      if (type != null) 'type': type,
+      if (amountMinor != null) 'amount_minor': amountMinor,
+      if (accountUuid != null) 'account_uuid': accountUuid,
+      if (toAccountUuid != null) 'to_account_uuid': toAccountUuid,
+      if (categoryUuid != null) 'category_uuid': categoryUuid,
+      if (note != null) 'note': note,
+      if (occurredAt != null) 'occurred_at': occurredAt,
+      if (createdAt != null) 'created_at': createdAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TransactionsCompanion copyWith({
+    Value<String>? uuid,
+    Value<String>? type,
+    Value<int>? amountMinor,
+    Value<String>? accountUuid,
+    Value<String?>? toAccountUuid,
+    Value<String?>? categoryUuid,
+    Value<String>? note,
+    Value<DateTime>? occurredAt,
+    Value<DateTime>? createdAt,
+    Value<int>? rowid,
+  }) {
+    return TransactionsCompanion(
+      uuid: uuid ?? this.uuid,
+      type: type ?? this.type,
+      amountMinor: amountMinor ?? this.amountMinor,
+      accountUuid: accountUuid ?? this.accountUuid,
+      toAccountUuid: toAccountUuid ?? this.toAccountUuid,
+      categoryUuid: categoryUuid ?? this.categoryUuid,
+      note: note ?? this.note,
+      occurredAt: occurredAt ?? this.occurredAt,
+      createdAt: createdAt ?? this.createdAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (amountMinor.present) {
+      map['amount_minor'] = Variable<int>(amountMinor.value);
+    }
+    if (accountUuid.present) {
+      map['account_uuid'] = Variable<String>(accountUuid.value);
+    }
+    if (toAccountUuid.present) {
+      map['to_account_uuid'] = Variable<String>(toAccountUuid.value);
+    }
+    if (categoryUuid.present) {
+      map['category_uuid'] = Variable<String>(categoryUuid.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
+    }
+    if (occurredAt.present) {
+      map['occurred_at'] = Variable<DateTime>(occurredAt.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TransactionsCompanion(')
+          ..write('uuid: $uuid, ')
+          ..write('type: $type, ')
+          ..write('amountMinor: $amountMinor, ')
+          ..write('accountUuid: $accountUuid, ')
+          ..write('toAccountUuid: $toAccountUuid, ')
+          ..write('categoryUuid: $categoryUuid, ')
+          ..write('note: $note, ')
+          ..write('occurredAt: $occurredAt, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $CategoriesTable categories = $CategoriesTable(this);
   late final $AccountsTable accounts = $AccountsTable(this);
+  late final $TransactionsTable transactions = $TransactionsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [categories, accounts];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+    categories,
+    accounts,
+    transactions,
+  ];
 }
 
 typedef $$CategoriesTableCreateCompanionBuilder =
@@ -1139,6 +1736,32 @@ typedef $$CategoriesTableUpdateCompanionBuilder =
       Value<bool> visible,
       Value<int> rowid,
     });
+
+final class $$CategoriesTableReferences
+    extends BaseReferences<_$AppDatabase, $CategoriesTable, CategoryRow> {
+  $$CategoriesTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$TransactionsTable, List<TransactionRow>>
+  _transactionsRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.transactions,
+    aliasName: $_aliasNameGenerator(
+      db.categories.uuid,
+      db.transactions.categoryUuid,
+    ),
+  );
+
+  $$TransactionsTableProcessedTableManager get transactionsRefs {
+    final manager = $$TransactionsTableTableManager($_db, $_db.transactions)
+        .filter(
+          (f) => f.categoryUuid.uuid.sqlEquals($_itemColumn<String>('uuid')!),
+        );
+
+    final cache = $_typedResult.readTableOrNull(_transactionsRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
 
 class $$CategoriesTableFilterComposer
     extends Composer<_$AppDatabase, $CategoriesTable> {
@@ -1188,6 +1811,31 @@ class $$CategoriesTableFilterComposer
     column: $table.visible,
     builder: (column) => ColumnFilters(column),
   );
+
+  Expression<bool> transactionsRefs(
+    Expression<bool> Function($$TransactionsTableFilterComposer f) f,
+  ) {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uuid,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.categoryUuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$CategoriesTableOrderingComposer
@@ -1274,6 +1922,31 @@ class $$CategoriesTableAnnotationComposer
 
   GeneratedColumn<bool> get visible =>
       $composableBuilder(column: $table.visible, builder: (column) => column);
+
+  Expression<T> transactionsRefs<T extends Object>(
+    Expression<T> Function($$TransactionsTableAnnotationComposer a) f,
+  ) {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uuid,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.categoryUuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$CategoriesTableTableManager
@@ -1287,12 +1960,9 @@ class $$CategoriesTableTableManager
           $$CategoriesTableAnnotationComposer,
           $$CategoriesTableCreateCompanionBuilder,
           $$CategoriesTableUpdateCompanionBuilder,
-          (
-            CategoryRow,
-            BaseReferences<_$AppDatabase, $CategoriesTable, CategoryRow>,
-          ),
+          (CategoryRow, $$CategoriesTableReferences),
           CategoryRow,
-          PrefetchHooks Function()
+          PrefetchHooks Function({bool transactionsRefs})
         > {
   $$CategoriesTableTableManager(_$AppDatabase db, $CategoriesTable table)
     : super(
@@ -1350,9 +2020,45 @@ class $$CategoriesTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$CategoriesTableReferences(db, table, e),
+                ),
+              )
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback: ({transactionsRefs = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [if (transactionsRefs) db.transactions],
+              addJoins: null,
+              getPrefetchedDataCallback: (items) async {
+                return [
+                  if (transactionsRefs)
+                    await $_getPrefetchedData<
+                      CategoryRow,
+                      $CategoriesTable,
+                      TransactionRow
+                    >(
+                      currentTable: table,
+                      referencedTable: $$CategoriesTableReferences
+                          ._transactionsRefsTable(db),
+                      managerFromTypedResult: (p0) =>
+                          $$CategoriesTableReferences(
+                            db,
+                            table,
+                            p0,
+                          ).transactionsRefs,
+                      referencedItemsForCurrentItem: (item, referencedItems) =>
+                          referencedItems.where(
+                            (e) => e.categoryUuid == item.uuid,
+                          ),
+                      typedResults: items,
+                    ),
+                ];
+              },
+            );
+          },
         ),
       );
 }
@@ -1367,12 +2073,9 @@ typedef $$CategoriesTableProcessedTableManager =
       $$CategoriesTableAnnotationComposer,
       $$CategoriesTableCreateCompanionBuilder,
       $$CategoriesTableUpdateCompanionBuilder,
-      (
-        CategoryRow,
-        BaseReferences<_$AppDatabase, $CategoriesTable, CategoryRow>,
-      ),
+      (CategoryRow, $$CategoriesTableReferences),
       CategoryRow,
-      PrefetchHooks Function()
+      PrefetchHooks Function({bool transactionsRefs})
     >;
 typedef $$AccountsTableCreateCompanionBuilder =
     AccountsCompanion Function({
@@ -1400,6 +2103,56 @@ typedef $$AccountsTableUpdateCompanionBuilder =
       Value<bool> visible,
       Value<int> rowid,
     });
+
+final class $$AccountsTableReferences
+    extends BaseReferences<_$AppDatabase, $AccountsTable, AccountRow> {
+  $$AccountsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static MultiTypedResultKey<$TransactionsTable, List<TransactionRow>>
+  _sourceTransactionsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.transactions,
+    aliasName: $_aliasNameGenerator(
+      db.accounts.uuid,
+      db.transactions.accountUuid,
+    ),
+  );
+
+  $$TransactionsTableProcessedTableManager get sourceTransactions {
+    final manager = $$TransactionsTableTableManager($_db, $_db.transactions)
+        .filter(
+          (f) => f.accountUuid.uuid.sqlEquals($_itemColumn<String>('uuid')!),
+        );
+
+    final cache = $_typedResult.readTableOrNull(_sourceTransactionsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$TransactionsTable, List<TransactionRow>>
+  _destinationTransactionsTable(_$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(
+        db.transactions,
+        aliasName: $_aliasNameGenerator(
+          db.accounts.uuid,
+          db.transactions.toAccountUuid,
+        ),
+      );
+
+  $$TransactionsTableProcessedTableManager get destinationTransactions {
+    final manager = $$TransactionsTableTableManager($_db, $_db.transactions)
+        .filter(
+          (f) => f.toAccountUuid.uuid.sqlEquals($_itemColumn<String>('uuid')!),
+        );
+
+    final cache = $_typedResult.readTableOrNull(
+      _destinationTransactionsTable($_db),
+    );
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+}
 
 class $$AccountsTableFilterComposer
     extends Composer<_$AppDatabase, $AccountsTable> {
@@ -1454,6 +2207,56 @@ class $$AccountsTableFilterComposer
     column: $table.visible,
     builder: (column) => ColumnFilters(column),
   );
+
+  Expression<bool> sourceTransactions(
+    Expression<bool> Function($$TransactionsTableFilterComposer f) f,
+  ) {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uuid,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.accountUuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> destinationTransactions(
+    Expression<bool> Function($$TransactionsTableFilterComposer f) f,
+  ) {
+    final $$TransactionsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uuid,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.toAccountUuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableFilterComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$AccountsTableOrderingComposer
@@ -1552,6 +2355,56 @@ class $$AccountsTableAnnotationComposer
 
   GeneratedColumn<bool> get visible =>
       $composableBuilder(column: $table.visible, builder: (column) => column);
+
+  Expression<T> sourceTransactions<T extends Object>(
+    Expression<T> Function($$TransactionsTableAnnotationComposer a) f,
+  ) {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uuid,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.accountUuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<T> destinationTransactions<T extends Object>(
+    Expression<T> Function($$TransactionsTableAnnotationComposer a) f,
+  ) {
+    final $$TransactionsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.uuid,
+      referencedTable: $db.transactions,
+      getReferencedColumn: (t) => t.toAccountUuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$TransactionsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.transactions,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$AccountsTableTableManager
@@ -1565,12 +2418,12 @@ class $$AccountsTableTableManager
           $$AccountsTableAnnotationComposer,
           $$AccountsTableCreateCompanionBuilder,
           $$AccountsTableUpdateCompanionBuilder,
-          (
-            AccountRow,
-            BaseReferences<_$AppDatabase, $AccountsTable, AccountRow>,
-          ),
+          (AccountRow, $$AccountsTableReferences),
           AccountRow,
-          PrefetchHooks Function()
+          PrefetchHooks Function({
+            bool sourceTransactions,
+            bool destinationTransactions,
+          })
         > {
   $$AccountsTableTableManager(_$AppDatabase db, $AccountsTable table)
     : super(
@@ -1632,9 +2485,70 @@ class $$AccountsTableTableManager
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$AccountsTableReferences(db, table, e),
+                ),
+              )
               .toList(),
-          prefetchHooksCallback: null,
+          prefetchHooksCallback:
+              ({sourceTransactions = false, destinationTransactions = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (sourceTransactions) db.transactions,
+                    if (destinationTransactions) db.transactions,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (sourceTransactions)
+                        await $_getPrefetchedData<
+                          AccountRow,
+                          $AccountsTable,
+                          TransactionRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$AccountsTableReferences
+                              ._sourceTransactionsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$AccountsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).sourceTransactions,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.accountUuid == item.uuid,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (destinationTransactions)
+                        await $_getPrefetchedData<
+                          AccountRow,
+                          $AccountsTable,
+                          TransactionRow
+                        >(
+                          currentTable: table,
+                          referencedTable: $$AccountsTableReferences
+                              ._destinationTransactionsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$AccountsTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).destinationTransactions,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.toAccountUuid == item.uuid,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
+              },
         ),
       );
 }
@@ -1649,9 +2563,606 @@ typedef $$AccountsTableProcessedTableManager =
       $$AccountsTableAnnotationComposer,
       $$AccountsTableCreateCompanionBuilder,
       $$AccountsTableUpdateCompanionBuilder,
-      (AccountRow, BaseReferences<_$AppDatabase, $AccountsTable, AccountRow>),
+      (AccountRow, $$AccountsTableReferences),
       AccountRow,
-      PrefetchHooks Function()
+      PrefetchHooks Function({
+        bool sourceTransactions,
+        bool destinationTransactions,
+      })
+    >;
+typedef $$TransactionsTableCreateCompanionBuilder =
+    TransactionsCompanion Function({
+      required String uuid,
+      required String type,
+      required int amountMinor,
+      required String accountUuid,
+      Value<String?> toAccountUuid,
+      Value<String?> categoryUuid,
+      Value<String> note,
+      required DateTime occurredAt,
+      required DateTime createdAt,
+      Value<int> rowid,
+    });
+typedef $$TransactionsTableUpdateCompanionBuilder =
+    TransactionsCompanion Function({
+      Value<String> uuid,
+      Value<String> type,
+      Value<int> amountMinor,
+      Value<String> accountUuid,
+      Value<String?> toAccountUuid,
+      Value<String?> categoryUuid,
+      Value<String> note,
+      Value<DateTime> occurredAt,
+      Value<DateTime> createdAt,
+      Value<int> rowid,
+    });
+
+final class $$TransactionsTableReferences
+    extends BaseReferences<_$AppDatabase, $TransactionsTable, TransactionRow> {
+  $$TransactionsTableReferences(super.$_db, super.$_table, super.$_typedResult);
+
+  static $AccountsTable _accountUuidTable(_$AppDatabase db) =>
+      db.accounts.createAlias(
+        $_aliasNameGenerator(db.transactions.accountUuid, db.accounts.uuid),
+      );
+
+  $$AccountsTableProcessedTableManager get accountUuid {
+    final $_column = $_itemColumn<String>('account_uuid')!;
+
+    final manager = $$AccountsTableTableManager(
+      $_db,
+      $_db.accounts,
+    ).filter((f) => f.uuid.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_accountUuidTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $AccountsTable _toAccountUuidTable(_$AppDatabase db) =>
+      db.accounts.createAlias(
+        $_aliasNameGenerator(db.transactions.toAccountUuid, db.accounts.uuid),
+      );
+
+  $$AccountsTableProcessedTableManager? get toAccountUuid {
+    final $_column = $_itemColumn<String>('to_account_uuid');
+    if ($_column == null) return null;
+    final manager = $$AccountsTableTableManager(
+      $_db,
+      $_db.accounts,
+    ).filter((f) => f.uuid.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_toAccountUuidTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+
+  static $CategoriesTable _categoryUuidTable(_$AppDatabase db) =>
+      db.categories.createAlias(
+        $_aliasNameGenerator(db.transactions.categoryUuid, db.categories.uuid),
+      );
+
+  $$CategoriesTableProcessedTableManager? get categoryUuid {
+    final $_column = $_itemColumn<String>('category_uuid');
+    if ($_column == null) return null;
+    final manager = $$CategoriesTableTableManager(
+      $_db,
+      $_db.categories,
+    ).filter((f) => f.uuid.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_categoryUuidTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$TransactionsTableFilterComposer
+    extends Composer<_$AppDatabase, $TransactionsTable> {
+  $$TransactionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get uuid => $composableBuilder(
+    column: $table.uuid,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get amountMinor => $composableBuilder(
+    column: $table.amountMinor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get occurredAt => $composableBuilder(
+    column: $table.occurredAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$AccountsTableFilterComposer get accountUuid {
+    final $$AccountsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.accountUuid,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableFilterComposer(
+            $db: $db,
+            $table: $db.accounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$AccountsTableFilterComposer get toAccountUuid {
+    final $$AccountsTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.toAccountUuid,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableFilterComposer(
+            $db: $db,
+            $table: $db.accounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableFilterComposer get categoryUuid {
+    final $$CategoriesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryUuid,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableFilterComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TransactionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TransactionsTable> {
+  $$TransactionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get uuid => $composableBuilder(
+    column: $table.uuid,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get amountMinor => $composableBuilder(
+    column: $table.amountMinor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get note => $composableBuilder(
+    column: $table.note,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get occurredAt => $composableBuilder(
+    column: $table.occurredAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$AccountsTableOrderingComposer get accountUuid {
+    final $$AccountsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.accountUuid,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableOrderingComposer(
+            $db: $db,
+            $table: $db.accounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$AccountsTableOrderingComposer get toAccountUuid {
+    final $$AccountsTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.toAccountUuid,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableOrderingComposer(
+            $db: $db,
+            $table: $db.accounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableOrderingComposer get categoryUuid {
+    final $$CategoriesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryUuid,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableOrderingComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TransactionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TransactionsTable> {
+  $$TransactionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => column);
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<int> get amountMinor => $composableBuilder(
+    column: $table.amountMinor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get occurredAt => $composableBuilder(
+    column: $table.occurredAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  $$AccountsTableAnnotationComposer get accountUuid {
+    final $$AccountsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.accountUuid,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.accounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$AccountsTableAnnotationComposer get toAccountUuid {
+    final $$AccountsTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.toAccountUuid,
+      referencedTable: $db.accounts,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$AccountsTableAnnotationComposer(
+            $db: $db,
+            $table: $db.accounts,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+
+  $$CategoriesTableAnnotationComposer get categoryUuid {
+    final $$CategoriesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.categoryUuid,
+      referencedTable: $db.categories,
+      getReferencedColumn: (t) => t.uuid,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$CategoriesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.categories,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$TransactionsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TransactionsTable,
+          TransactionRow,
+          $$TransactionsTableFilterComposer,
+          $$TransactionsTableOrderingComposer,
+          $$TransactionsTableAnnotationComposer,
+          $$TransactionsTableCreateCompanionBuilder,
+          $$TransactionsTableUpdateCompanionBuilder,
+          (TransactionRow, $$TransactionsTableReferences),
+          TransactionRow,
+          PrefetchHooks Function({
+            bool accountUuid,
+            bool toAccountUuid,
+            bool categoryUuid,
+          })
+        > {
+  $$TransactionsTableTableManager(_$AppDatabase db, $TransactionsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TransactionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TransactionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TransactionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> uuid = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<int> amountMinor = const Value.absent(),
+                Value<String> accountUuid = const Value.absent(),
+                Value<String?> toAccountUuid = const Value.absent(),
+                Value<String?> categoryUuid = const Value.absent(),
+                Value<String> note = const Value.absent(),
+                Value<DateTime> occurredAt = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TransactionsCompanion(
+                uuid: uuid,
+                type: type,
+                amountMinor: amountMinor,
+                accountUuid: accountUuid,
+                toAccountUuid: toAccountUuid,
+                categoryUuid: categoryUuid,
+                note: note,
+                occurredAt: occurredAt,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String uuid,
+                required String type,
+                required int amountMinor,
+                required String accountUuid,
+                Value<String?> toAccountUuid = const Value.absent(),
+                Value<String?> categoryUuid = const Value.absent(),
+                Value<String> note = const Value.absent(),
+                required DateTime occurredAt,
+                required DateTime createdAt,
+                Value<int> rowid = const Value.absent(),
+              }) => TransactionsCompanion.insert(
+                uuid: uuid,
+                type: type,
+                amountMinor: amountMinor,
+                accountUuid: accountUuid,
+                toAccountUuid: toAccountUuid,
+                categoryUuid: categoryUuid,
+                note: note,
+                occurredAt: occurredAt,
+                createdAt: createdAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$TransactionsTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback:
+              ({
+                accountUuid = false,
+                toAccountUuid = false,
+                categoryUuid = false,
+              }) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [],
+                  addJoins:
+                      <
+                        T extends TableManagerState<
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic,
+                          dynamic
+                        >
+                      >(state) {
+                        if (accountUuid) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.accountUuid,
+                                    referencedTable:
+                                        $$TransactionsTableReferences
+                                            ._accountUuidTable(db),
+                                    referencedColumn:
+                                        $$TransactionsTableReferences
+                                            ._accountUuidTable(db)
+                                            .uuid,
+                                  )
+                                  as T;
+                        }
+                        if (toAccountUuid) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.toAccountUuid,
+                                    referencedTable:
+                                        $$TransactionsTableReferences
+                                            ._toAccountUuidTable(db),
+                                    referencedColumn:
+                                        $$TransactionsTableReferences
+                                            ._toAccountUuidTable(db)
+                                            .uuid,
+                                  )
+                                  as T;
+                        }
+                        if (categoryUuid) {
+                          state =
+                              state.withJoin(
+                                    currentTable: table,
+                                    currentColumn: table.categoryUuid,
+                                    referencedTable:
+                                        $$TransactionsTableReferences
+                                            ._categoryUuidTable(db),
+                                    referencedColumn:
+                                        $$TransactionsTableReferences
+                                            ._categoryUuidTable(db)
+                                            .uuid,
+                                  )
+                                  as T;
+                        }
+
+                        return state;
+                      },
+                  getPrefetchedDataCallback: (items) async {
+                    return [];
+                  },
+                );
+              },
+        ),
+      );
+}
+
+typedef $$TransactionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TransactionsTable,
+      TransactionRow,
+      $$TransactionsTableFilterComposer,
+      $$TransactionsTableOrderingComposer,
+      $$TransactionsTableAnnotationComposer,
+      $$TransactionsTableCreateCompanionBuilder,
+      $$TransactionsTableUpdateCompanionBuilder,
+      (TransactionRow, $$TransactionsTableReferences),
+      TransactionRow,
+      PrefetchHooks Function({
+        bool accountUuid,
+        bool toAccountUuid,
+        bool categoryUuid,
+      })
     >;
 
 class $AppDatabaseManager {
@@ -1661,4 +3172,6 @@ class $AppDatabaseManager {
       $$CategoriesTableTableManager(_db, _db.categories);
   $$AccountsTableTableManager get accounts =>
       $$AccountsTableTableManager(_db, _db.accounts);
+  $$TransactionsTableTableManager get transactions =>
+      $$TransactionsTableTableManager(_db, _db.transactions);
 }

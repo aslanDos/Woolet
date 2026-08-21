@@ -7,16 +7,22 @@ import 'package:woolet/features/data/datasources/account_local_data_source.dart'
 import 'package:woolet/features/data/datasources/account_local_data_source_impl.dart';
 import 'package:woolet/features/data/datasources/category_local_data_source.dart';
 import 'package:woolet/features/data/datasources/category_local_data_source_impl.dart';
+import 'package:woolet/features/data/datasources/transaction_local_data_source.dart';
+import 'package:woolet/features/data/datasources/transaction_local_data_source_impl.dart';
 import 'package:woolet/features/data/repositories/account_repository_impl.dart';
 import 'package:woolet/features/data/repositories/category_repository_impl.dart';
+import 'package:woolet/features/data/repositories/transaction_repository_impl.dart';
 import 'package:woolet/features/domain/constants/default_accounts.dart';
 import 'package:woolet/features/domain/constants/default_categories.dart';
 import 'package:woolet/features/domain/repositories/account_repository.dart';
 import 'package:woolet/features/domain/repositories/category_repository.dart';
+import 'package:woolet/features/domain/repositories/transaction_repository.dart';
 import 'package:woolet/features/domain/usecases/account/account_usecases.dart';
 import 'package:woolet/features/domain/usecases/category/category_usecases.dart';
+import 'package:woolet/features/domain/usecases/transaction/transaction_usecases.dart';
 import 'package:woolet/features/presentation/blocs/account/account_bloc.dart';
 import 'package:woolet/features/presentation/blocs/category/category_bloc.dart';
+import 'package:woolet/features/presentation/blocs/transaction/transaction_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -33,6 +39,28 @@ Future<void> initDependencies() async {
 
   _initAccountFeature();
   _initCategoryFeature();
+  _initTransactionFeature();
+}
+
+void _initTransactionFeature() {
+  sl.registerLazySingleton<TransactionLocalDataSource>(
+    () => TransactionLocalDataSourceImpl(database: sl()),
+  );
+  sl.registerLazySingleton<TransactionRepository>(
+    () => TransactionRepositoryImpl(localDataSource: sl()),
+  );
+  sl.registerLazySingleton(() => GetTransactions(sl()));
+  sl.registerLazySingleton(() => CreateTransaction(sl()));
+  sl.registerLazySingleton(() => UpdateTransaction(sl()));
+  sl.registerLazySingleton(() => DeleteTransaction(sl()));
+  sl.registerFactory(
+    () => TransactionBloc(
+      getTransactions: sl(),
+      createTransaction: sl(),
+      updateTransaction: sl(),
+      deleteTransaction: sl(),
+    ),
+  );
 }
 
 void _initAccountFeature() {

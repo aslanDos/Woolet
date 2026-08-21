@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:pie_menu/pie_menu.dart';
+import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/features/domain/entities/account_entity.dart';
 import 'package:woolet/features/presentation/screens/analytics_screen.dart';
 import 'package:woolet/features/presentation/screens/budgets_screen.dart';
 import 'package:woolet/features/presentation/screens/home_screen.dart';
 import 'package:woolet/features/presentation/screens/settings_screen.dart';
+import 'package:woolet/features/presentation/blocs/transaction/transaction_bloc.dart';
 import 'package:woolet/features/presentation/sheets/transaction_form_sheet.dart';
 import 'package:woolet/features/presentation/widgets/navbar.dart';
 
@@ -22,6 +26,7 @@ class _MainTabViewState extends State<MainTabView>
 
   late final TabController _tabController;
   int _currentIndex = 0;
+  AccountEntity? _homeAccount;
 
   @override
   void initState() {
@@ -51,32 +56,52 @@ class _MainTabViewState extends State<MainTabView>
 
   @override
   Widget build(BuildContext context) {
-    return PieCanvas(
-      theme: context.pieTheme,
-      child: Scaffold(
-        extendBody: true,
-        appBar: AppBar(
-          title: Text(_titles[_currentIndex], style: context.t.headlineLarge),
-          centerTitle: false,
-        ),
-        bottomNavigationBar: Navbar(
-          activeIndex: _currentIndex,
-          onTap: _navigateTo,
-          onAddTap: (type) {
-            context.openBottomSheet(
-              child: TransactionFormSheet(initialTransactionType: type),
-            );
-          },
-        ),
-        body: TabBarView(
-          physics: const NeverScrollableScrollPhysics(),
-          controller: _tabController,
-          children: const [
-            HomeScreen(),
-            AnalyticsScreen(),
-            BudgetsScreen(),
-            SettingsScreen(),
-          ],
+    return BlocProvider(
+      create: (_) =>
+          sl<TransactionBloc>()..add(const TransactionLoadRequested()),
+      child: Builder(
+        builder: (context) => PieCanvas(
+          theme: context.pieTheme,
+          child: Scaffold(
+            extendBody: true,
+            appBar: AppBar(
+              title: Text(
+                _titles[_currentIndex],
+                style: context.t.headlineLarge,
+              ),
+              centerTitle: false,
+            ),
+            bottomNavigationBar: Navbar(
+              activeIndex: _currentIndex,
+              onTap: _navigateTo,
+              onAddTap: (type) {
+                final transactionBloc = context.read<TransactionBloc>();
+                context.openBottomSheet(
+                  child: BlocProvider.value(
+                    value: transactionBloc,
+                    child: TransactionFormSheet(
+                      initialTransactionType: type,
+                      initialAccount: _homeAccount,
+                    ),
+                  ),
+                );
+              },
+            ),
+            body: TabBarView(
+              physics: const NeverScrollableScrollPhysics(),
+              controller: _tabController,
+              children: [
+                HomeScreen(
+                  onAccountSelectionChanged: (account) {
+                    _homeAccount = account;
+                  },
+                ),
+                const AnalyticsScreen(),
+                const BudgetsScreen(),
+                const SettingsScreen(),
+              ],
+            ),
+          ),
         ),
       ),
     );
