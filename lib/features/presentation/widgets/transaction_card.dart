@@ -41,7 +41,7 @@ class TransactionCard extends StatelessWidget {
     final subtitle = transaction.note.isNotEmpty
         ? transaction.note
         : transaction.type == TransactionType.transfer
-        ? '${account?.name ?? 'Account'} → ${toAccount?.name ?? 'Account'}'
+        ? '${account?.name ?? 'Account'}   →   ${toAccount?.name ?? 'Account'}'
         : account?.name ?? 'Account';
     final symbol = account == null
         ? currencyController.value.symbol
@@ -49,7 +49,7 @@ class TransactionCard extends StatelessWidget {
     final sign = switch (transaction.type) {
       TransactionType.income => '+',
       TransactionType.expense => '−',
-      TransactionType.transfer => '↗',
+      TransactionType.transfer => '',
     };
     final amount = transaction.amountMinor / 100;
     final formatted = amount == amount.truncateToDouble()

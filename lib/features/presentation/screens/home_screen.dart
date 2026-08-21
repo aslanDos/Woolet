@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:woolet/core/constants/app_enums.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
@@ -14,6 +14,7 @@ import 'package:woolet/features/presentation/blocs/transaction/transaction_bloc.
 import 'package:woolet/features/presentation/sheets/accounts_sheet.dart';
 import 'package:woolet/features/presentation/sheets/periods_sheet.dart';
 import 'package:woolet/features/presentation/sheets/transaction_form_sheet.dart';
+import 'package:woolet/features/presentation/sheets/transaction_filter_sheet.dart';
 import 'package:woolet/features/presentation/widgets/account_overview.dart';
 import 'package:woolet/features/presentation/widgets/transaction_card.dart';
 
@@ -59,6 +60,7 @@ class _HomeContentState extends State<_HomeContent> {
   String? _selectedAccountUuid;
   bool _allAccountsSelected = true;
   PeriodSelection _period = PeriodSelection.initial();
+  TransactionFilter _filter = const TransactionFilter();
 
   void _changePeriod(int direction) {
     if (_period.canNavigate) {
@@ -71,6 +73,14 @@ class _HomeContentState extends State<_HomeContent> {
       child: PeriodsSheet(selected: _period),
     );
     if (selected != null && mounted) setState(() => _period = selected);
+  }
+
+  Future<void> _openFilters() async {
+    final selected = await context.openBottomSheet<TransactionFilter>(
+      child: TransactionFilterSheet(filter: _filter),
+    );
+    if (selected == null || !mounted) return;
+    setState(() => _filter = selected);
   }
 
   Future<void> _openAccountSelector() async {
@@ -93,115 +103,120 @@ class _HomeContentState extends State<_HomeContent> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<TransactionBloc, TransactionState>(
-      listenWhen: (previous, current) =>
-          previous.transactions != current.transactions,
-      listener: (context, state) {
-        context.read<AccountBloc>().add(const AccountLoadRequested());
-        context.read<CategoryBloc>().add(const CategoryLoadRequested());
-      },
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: BlocBuilder<AccountBloc, AccountState>(
-            builder: (context, accountState) {
-              final accounts = accountState.accounts
-                  .where((a) => a.visible)
-                  .toList();
-              final selectedAccount = _allAccountsSelected
-                  ? null
-                  : _findAccount(accounts, _selectedAccountUuid) ??
-                        (accounts.isEmpty ? null : accounts.first);
-              final currencies = accounts.map((a) => a.currencyCode).toSet();
-              final currency = sl<CurrencyController>();
-              final overviewTransactions = context
-                  .watch<TransactionBloc>()
-                  .state
-                  .transactions
-                  .where(
-                    (value) =>
-                        (_allAccountsSelected ||
-                            value.accountUuid == selectedAccount?.uuid ||
-                            value.toAccountUuid == selectedAccount?.uuid) &&
-                        _inPeriod(value.occurredAt),
-                  );
-              final incomeMinor = overviewTransactions
-                  .where((value) => value.type == TransactionType.income)
-                  .fold<int>(0, (sum, value) => sum + value.amountMinor);
-              final expenseMinor = overviewTransactions
-                  .where((value) => value.type == TransactionType.expense)
-                  .fold<int>(0, (sum, value) => sum + value.amountMinor);
-              return Column(
-                children: [
-                  AccountOverview(
-                    account: selectedAccount,
-                    currencySymbol: selectedAccount == null
-                        ? currency.value.symbol
-                        : currency.symbolForCode(selectedAccount.currencyCode),
-                    allAccounts: _allAccountsSelected,
-                    totalBalanceMinor: accounts.fold<int>(
-                      0,
-                      (sum, value) => sum + value.balanceMinor,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Transactions', style: context.t.headlineLarge),
+        centerTitle: false,
+        actionsPadding: EdgeInsets.only(right: 16),
+        actions: [
+          IconButton(
+            onPressed: _openFilters,
+            icon: Icon(
+              LucideIcons.list_filter,
+              color: _filter.isDefault ? null : context.c.primary,
+            ),
+          ),
+        ],
+      ),
+      body: BlocListener<TransactionBloc, TransactionState>(
+        listenWhen: (previous, current) =>
+            previous.transactions != current.transactions,
+        listener: (context, state) {
+          context.read<AccountBloc>().add(const AccountLoadRequested());
+          context.read<CategoryBloc>().add(const CategoryLoadRequested());
+        },
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: BlocBuilder<AccountBloc, AccountState>(
+              builder: (context, accountState) {
+                final accounts = accountState.accounts
+                    .where((a) => a.visible)
+                    .toList();
+                final selectedAccount = _allAccountsSelected
+                    ? null
+                    : _findAccount(accounts, _selectedAccountUuid) ??
+                          (accounts.isEmpty ? null : accounts.first);
+                final currencies = accounts.map((a) => a.currencyCode).toSet();
+                final currency = sl<CurrencyController>();
+                return Column(
+                  children: [
+                    AccountOverview(
+                      account: selectedAccount,
+                      currencySymbol: selectedAccount == null
+                          ? currency.value.symbol
+                          : currency.symbolForCode(
+                              selectedAccount.currencyCode,
+                            ),
+                      allAccounts: _allAccountsSelected,
+                      totalBalanceMinor: accounts.fold<int>(
+                        0,
+                        (sum, value) => sum + value.balanceMinor,
+                      ),
+                      totalCurrencySymbol: currencies.length == 1
+                          ? currency.symbolForCode(currencies.single)
+                          : null,
+                      period: _period,
+                      onAccountTap: _openAccountSelector,
+                      onPeriodTap: _openPeriodSelector,
+                      onPreviousPeriod: () => _changePeriod(-1),
+                      onNextPeriod: () => _changePeriod(1),
                     ),
-                    totalCurrencySymbol: currencies.length == 1
-                        ? currency.symbolForCode(currencies.single)
-                        : null,
-                    incomeMinor: incomeMinor,
-                    expenseMinor: expenseMinor,
-                    period: _period,
-                    onAccountTap: _openAccountSelector,
-                    onPeriodTap: _openPeriodSelector,
-                    onPreviousPeriod: () => _changePeriod(-1),
-                    onNextPeriod: () => _changePeriod(1),
-                  ),
-                  const SizedBox(height: 16),
-                  Expanded(
-                    child: BlocBuilder<CategoryBloc, CategoryState>(
-                      builder: (context, categoryState) =>
-                          BlocBuilder<TransactionBloc, TransactionState>(
-                            builder: (context, transactionState) {
-                              final values = transactionState.transactions
-                                  .where(
-                                    (value) =>
-                                        (_allAccountsSelected ||
-                                            value.accountUuid ==
-                                                selectedAccount?.uuid ||
-                                            value.toAccountUuid ==
-                                                selectedAccount?.uuid) &&
-                                        _inPeriod(value.occurredAt),
-                                  )
-                                  .toList();
-                              if (transactionState.status ==
-                                      TransactionStatus.loading &&
-                                  values.isEmpty) {
-                                return const Center(
-                                  child: CircularProgressIndicator(),
-                                );
-                              }
-                              if (values.isEmpty) {
-                                return Center(
-                                  child: Text(
-                                    'No transactions for this period',
-                                    style: context.t.bodyMedium?.copyWith(
-                                      color: context.c.outline,
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: BlocBuilder<CategoryBloc, CategoryState>(
+                        builder: (context, categoryState) =>
+                            BlocBuilder<TransactionBloc, TransactionState>(
+                              builder: (context, transactionState) {
+                                final values =
+                                    transactionState.transactions
+                                        .where(
+                                          (value) =>
+                                              (_allAccountsSelected ||
+                                                  value.accountUuid ==
+                                                      selectedAccount?.uuid ||
+                                                  value.toAccountUuid ==
+                                                      selectedAccount?.uuid) &&
+                                              _filter.types.contains(
+                                                value.type,
+                                              ) &&
+                                              _inPeriod(value.occurredAt),
+                                        )
+                                        .toList()
+                                      ..sort(_compareTransactions);
+                                if (transactionState.status ==
+                                        TransactionStatus.loading &&
+                                    values.isEmpty) {
+                                  return const Center(
+                                    child: CircularProgressIndicator(),
+                                  );
+                                }
+                                if (values.isEmpty) {
+                                  return Center(
+                                    child: Text(
+                                      'No transactions for this period',
+                                      style: context.t.bodyMedium?.copyWith(
+                                        color: context.c.outline,
+                                      ),
                                     ),
-                                  ),
+                                  );
+                                }
+                                return _transactionList(
+                                  values,
+                                  accounts,
+                                  categoryState.categories,
+                                  currency,
+                                  selectedAccount,
                                 );
-                              }
-                              return _transactionList(
-                                values,
-                                accounts,
-                                categoryState.categories,
-                                currency,
-                                selectedAccount,
-                              );
-                            },
-                          ),
+                              },
+                            ),
+                      ),
                     ),
-                  ),
-                ],
-              );
-            },
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -292,6 +307,34 @@ class _HomeContentState extends State<_HomeContent> {
       if (value.uuid == uuid) return value;
     }
     return null;
+  }
+
+  int _compareTransactions(TransactionEntity first, TransactionEntity second) {
+    final firstDay = DateTime(
+      first.occurredAt.year,
+      first.occurredAt.month,
+      first.occurredAt.day,
+    );
+    final secondDay = DateTime(
+      second.occurredAt.year,
+      second.occurredAt.month,
+      second.occurredAt.day,
+    );
+    final dayComparison = _filter.sort == TransactionSort.oldest
+        ? firstDay.compareTo(secondDay)
+        : secondDay.compareTo(firstDay);
+    if (dayComparison != 0) return dayComparison;
+
+    return switch (_filter.sort) {
+      TransactionSort.newest => second.occurredAt.compareTo(first.occurredAt),
+      TransactionSort.oldest => first.occurredAt.compareTo(second.occurredAt),
+      TransactionSort.highestAmount => second.amountMinor.compareTo(
+        first.amountMinor,
+      ),
+      TransactionSort.lowestAmount => first.amountMinor.compareTo(
+        second.amountMinor,
+      ),
+    };
   }
 
   bool _inPeriod(DateTime date) {

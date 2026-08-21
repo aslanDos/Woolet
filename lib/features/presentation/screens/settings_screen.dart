@@ -46,39 +46,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<ThemeMode>(
-      valueListenable: _themeController,
-      builder: (context, themeMode, _) => ValueListenableBuilder<CurrencyInfo>(
-        valueListenable: _currencyController,
-        builder: (context, currency, _) => SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
-            children: [
-              _SettingsGroup(
-                title: 'General',
-                items: [
-                  _SettingsItem(
-                    icon: LucideIcons.sun_moon,
-                    title: 'Theme',
-                    value: themeMode.label,
-                    onTap: _selectTheme,
-                  ),
-                  _SettingsItem(
-                    icon: LucideIcons.badge_dollar_sign,
-                    title: 'Currency',
-                    value: '${currency.name} (${currency.symbol})',
-                    onTap: _selectCurrency,
-                  ),
-                  _SettingsItem(
-                    icon: LucideIcons.tags,
-                    title: 'Categories',
-                    onTap: _openCategories,
-                  ),
-                ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Settings', style: context.t.headlineLarge),
+        centerTitle: false,
+      ),
+      body: ValueListenableBuilder<ThemeMode>(
+        valueListenable: _themeController,
+        builder: (context, themeMode, _) =>
+            ValueListenableBuilder<CurrencyInfo>(
+              valueListenable: _currencyController,
+              builder: (context, currency, _) => SafeArea(
+                top: false,
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+                  children: [
+                    _SettingsGroup(
+                      title: 'General',
+                      items: [
+                        _SettingsItem(
+                          icon: LucideIcons.sun_moon,
+                          title: 'Theme',
+                          value: themeMode.label,
+                          onTap: _selectTheme,
+                        ),
+                        _SettingsItem(
+                          icon: LucideIcons.badge_dollar_sign,
+                          title: 'Currency',
+                          value: '${currency.name} (${currency.symbol})',
+                          onTap: _selectCurrency,
+                        ),
+                        _SettingsItem(
+                          icon: LucideIcons.tags,
+                          title: 'Categories',
+                          onTap: _openCategories,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
+            ),
       ),
     );
   }

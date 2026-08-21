@@ -7,12 +7,16 @@ class Button extends StatelessWidget {
     required this.onPressed,
     this.icon,
     this.isLoading = false,
+    this.backgroundColor,
+    this.foregroundColor,
   });
 
   final String label;
   final VoidCallback? onPressed;
   final IconData? icon;
   final bool isLoading;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +34,8 @@ class Button extends StatelessWidget {
               onPressed: isLoading ? null : onPressed,
               style: FilledButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 14),
+                backgroundColor: backgroundColor,
+                foregroundColor: foregroundColor,
               ),
               child: child,
             )
@@ -39,6 +45,8 @@ class Button extends StatelessWidget {
               label: child,
               style: FilledButton.styleFrom(
                 padding: EdgeInsets.symmetric(vertical: 12),
+                backgroundColor: backgroundColor,
+                foregroundColor: foregroundColor,
               ),
             ),
     );

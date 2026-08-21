@@ -22,8 +22,6 @@ class MainTabView extends StatefulWidget {
 
 class _MainTabViewState extends State<MainTabView>
     with SingleTickerProviderStateMixin {
-  static const _titles = ['Transactions', 'Analytics', 'Budgets', 'Settings'];
-
   late final TabController _tabController;
   int _currentIndex = 0;
   AccountEntity? _homeAccount;
@@ -64,13 +62,6 @@ class _MainTabViewState extends State<MainTabView>
           theme: context.pieTheme,
           child: Scaffold(
             extendBody: true,
-            appBar: AppBar(
-              title: Text(
-                _titles[_currentIndex],
-                style: context.t.headlineLarge,
-              ),
-              centerTitle: false,
-            ),
             bottomNavigationBar: Navbar(
               activeIndex: _currentIndex,
               onTap: _navigateTo,
