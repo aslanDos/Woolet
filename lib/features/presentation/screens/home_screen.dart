@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:go_router/go_router.dart';
+import 'package:woolet/core/constants/app_enums.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/router/routes.dart';
 import 'package:woolet/core/settings/currency_controller.dart';
+import 'package:woolet/core/utils/date_utils.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
 import 'package:woolet/features/domain/entities/category_entity.dart';
 import 'package:woolet/features/domain/entities/transaction_entity.dart';
@@ -48,15 +52,6 @@ class _HomeContent extends StatefulWidget {
 }
 
 class _HomeContentState extends State<_HomeContent> {
-  static const _weekdays = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday',
-  ];
   String? _selectedAccountUuid;
   bool _allAccountsSelected = true;
   PeriodSelection _period = PeriodSelection.initial();
@@ -105,16 +100,26 @@ class _HomeContentState extends State<_HomeContent> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Transactions', style: context.t.headlineLarge),
+        title: Text('Home', style: context.t.headlineLarge),
         centerTitle: false,
         actionsPadding: EdgeInsets.only(right: 16),
         actions: [
           IconButton(
             onPressed: _openFilters,
             icon: Icon(
-              LucideIcons.list_filter,
+              LucideIcons.sliders_horizontal,
               color: _filter.isDefault ? null : context.c.primary,
             ),
+          ),
+          const SizedBox(width: 4),
+          IconButton(
+            onPressed: () => context.push(AppRoutes.analytics),
+            icon: const Icon(LucideIcons.chart_pie),
+          ),
+          const SizedBox(width: 4),
+          IconButton(
+            onPressed: () => context.push(AppRoutes.settings),
+            icon: const Icon(LucideIcons.settings),
           ),
         ],
       ),
@@ -128,7 +133,7 @@ class _HomeContentState extends State<_HomeContent> {
         child: SafeArea(
           top: false,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: BlocBuilder<AccountBloc, AccountState>(
               builder: (context, accountState) {
                 final accounts = accountState.accounts
@@ -140,6 +145,23 @@ class _HomeContentState extends State<_HomeContent> {
                           (accounts.isEmpty ? null : accounts.first);
                 final currencies = accounts.map((a) => a.currencyCode).toSet();
                 final currency = sl<CurrencyController>();
+                final periodTransactions = context
+                    .watch<TransactionBloc>()
+                    .state
+                    .transactions
+                    .where(
+                      (value) =>
+                          (_allAccountsSelected ||
+                              value.accountUuid == selectedAccount?.uuid ||
+                              value.toAccountUuid == selectedAccount?.uuid) &&
+                          _inPeriod(value.occurredAt),
+                    );
+                final incomeMinor = periodTransactions
+                    .where((value) => value.type == TransactionType.income)
+                    .fold<int>(0, (sum, value) => sum + value.amountMinor);
+                final expenseMinor = periodTransactions
+                    .where((value) => value.type == TransactionType.expense)
+                    .fold<int>(0, (sum, value) => sum + value.amountMinor);
                 return Column(
                   children: [
                     AccountOverview(
@@ -157,6 +179,8 @@ class _HomeContentState extends State<_HomeContent> {
                       totalCurrencySymbol: currencies.length == 1
                           ? currency.symbolForCode(currencies.single)
                           : null,
+                      incomeMinor: incomeMinor,
+                      expenseMinor: expenseMinor,
                       period: _period,
                       onAccountTap: _openAccountSelector,
                       onPeriodTap: _openPeriodSelector,
@@ -245,7 +269,10 @@ class _HomeContentState extends State<_HomeContent> {
             padding: const EdgeInsets.only(bottom: 10),
             child: Row(
               children: [
-                Text(_weekdays[day.weekday - 1], style: context.t.titleLarge),
+                Text(
+                  AppDateUtils.weekdayName(day),
+                  style: context.t.titleLarge,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   MaterialLocalizations.of(context).formatShortMonthDay(day),
@@ -262,7 +289,7 @@ class _HomeContentState extends State<_HomeContent> {
       final account = _findAccount(accounts, value.accountUuid);
       widgets.add(
         Padding(
-          padding: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.only(bottom: 4),
           child: TransactionCard(
             transaction: value,
             account: account,
@@ -290,7 +317,7 @@ class _HomeContentState extends State<_HomeContent> {
       );
     }
     return ListView(
-      padding: const EdgeInsets.only(bottom: 100),
+      padding: const EdgeInsets.only(bottom: 16),
       children: widgets,
     );
   }

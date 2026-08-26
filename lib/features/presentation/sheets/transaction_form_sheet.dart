@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
@@ -9,8 +7,10 @@ import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/core/extensions/transaction_type_x.dart';
 import 'package:woolet/core/settings/currency_controller.dart';
+import 'package:woolet/core/utils/amount_utils.dart';
 import 'package:woolet/core/utils/uuid.dart';
 import 'package:woolet/core/widgets/alert_dialog.dart';
+import 'package:woolet/core/widgets/error_toast.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
 import 'package:woolet/features/domain/entities/category_entity.dart';
 import 'package:woolet/features/domain/entities/transaction_entity.dart';
@@ -55,9 +55,7 @@ class _TransactionFormSheetState extends State<TransactionFormSheet>
   CategoryEntity? _category;
   List<AccountEntity> _accounts = const [];
   bool _deleting = false;
-  OverlayEntry? _errorToast;
-  Timer? _errorToastTimer;
-  late final AnimationController _errorToastController;
+  late final ErrorToastController _errorToast;
 
   bool get _isEditing => widget.transaction != null;
 
@@ -66,15 +64,11 @@ class _TransactionFormSheetState extends State<TransactionFormSheet>
     super.initState();
     final value = widget.transaction;
     _type = value?.type ?? widget.initialTransactionType;
-    _amount = (value?.amountMinor ?? 0) / 100;
+    _amount = AmountUtils.fromMinor(value?.amountMinor ?? 0);
     _date = value?.occurredAt ?? DateTime.now();
     _account = widget.initialAccount;
     _noteController = TextEditingController(text: value?.note ?? '');
-    _errorToastController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 240),
-      reverseDuration: const Duration(milliseconds: 180),
-    );
+    _errorToast = ErrorToastController(vsync: this);
     _loadLinkedValues(value);
   }
 
@@ -124,8 +118,7 @@ class _TransactionFormSheetState extends State<TransactionFormSheet>
 
   @override
   void dispose() {
-    _hideErrorToast(immediately: true);
-    _errorToastController.dispose();
+    _errorToast.dispose();
     _noteController.dispose();
     super.dispose();
   }
@@ -144,7 +137,7 @@ class _TransactionFormSheetState extends State<TransactionFormSheet>
                 _toAccount = _defaultToAccount();
               }
             }
-            _hideErrorToast();
+            _errorToast.hide();
           });
           Navigator.pop(context);
         },
@@ -159,15 +152,18 @@ class _TransactionFormSheetState extends State<TransactionFormSheet>
           previous.isProcessing && !current.isProcessing,
       listener: (context, state) {
         if (state.status == TransactionStatus.failure) {
-          _showErrorToast(state.errorMessage ?? 'Could not save transaction');
+          _errorToast.show(
+            context,
+            state.errorMessage ?? 'Could not save transaction',
+          );
         } else {
           Navigator.pop(context, !_deleting);
         }
       },
       builder: (context, state) => CustomBottomSheet(
-        height: MediaQuery.sizeOf(context).height * 0.9,
+        // height: MediaQuery.sizeOf(context).height * 0.9,
         footer: Button(
-          label: _isEditing ? 'Save changes' : 'Save',
+          label: 'Save',
           isLoading: state.isProcessing,
           onPressed: _submit,
         ),
@@ -213,7 +209,7 @@ class _TransactionFormSheetState extends State<TransactionFormSheet>
                   _toAccount = type == TransactionType.transfer
                       ? _defaultToAccount()
                       : null;
-                  _hideErrorToast();
+                  _errorToast.hide();
                 }),
               ),
               const SizedBox(height: 56),
@@ -237,11 +233,9 @@ class _TransactionFormSheetState extends State<TransactionFormSheet>
                   account: _toAccount,
                   onTap: () => _selectAccount(destination: true),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 4),
               ],
-              NoteField(controller: _noteController),
               if (_type != TransactionType.transfer) ...[
-                const SizedBox(height: 24),
                 CategorySelector(
                   type: _type == TransactionType.income
                       ? CategoryType.income
@@ -249,11 +243,13 @@ class _TransactionFormSheetState extends State<TransactionFormSheet>
                   selected: _category,
                   onChanged: (value) => setState(() {
                     _category = value;
-                    _hideErrorToast();
+                    _errorToast.hide();
                   }),
                 ),
+                const SizedBox(height: 4),
               ],
-              const SizedBox(height: 24),
+              NoteField(controller: _noteController),
+              // const SizedBox(height: 24),
             ],
           ),
         ),
@@ -279,7 +275,7 @@ class _TransactionFormSheetState extends State<TransactionFormSheet>
       error = 'Select a category';
     }
     if (error != null) {
-      _showErrorToast(error);
+      _errorToast.show(context, error);
       return;
     }
 
@@ -287,7 +283,7 @@ class _TransactionFormSheetState extends State<TransactionFormSheet>
     final value = TransactionEntity(
       uuid: original?.uuid ?? createUuidV4(),
       type: _type,
-      amountMinor: (_amount * 100).round(),
+      amountMinor: AmountUtils.toMinor(_amount),
       accountUuid: account!.uuid,
       toAccountUuid: _type == TransactionType.transfer
           ? _toAccount!.uuid
@@ -302,87 +298,6 @@ class _TransactionFormSheetState extends State<TransactionFormSheet>
           ? TransactionCreateRequested(value)
           : TransactionUpdateRequested(value),
     );
-  }
-
-  void _showErrorToast(String message) {
-    _hideErrorToast(immediately: true);
-    final overlay = Overlay.of(context, rootOverlay: true);
-    final animation = CurvedAnimation(
-      parent: _errorToastController,
-      curve: Curves.easeOutCubic,
-      reverseCurve: Curves.easeInCubic,
-    );
-    _errorToast = OverlayEntry(
-      builder: (overlayContext) => Positioned(
-        top: MediaQuery.paddingOf(overlayContext).top + 16,
-        left: 16,
-        right: 16,
-        child: FadeTransition(
-          opacity: animation,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, -0.35),
-              end: Offset.zero,
-            ).animate(animation),
-            child: Center(
-              child: Material(
-                color: overlayContext.c.errorContainer,
-                elevation: 8,
-                shadowColor: Colors.black.withValues(alpha: 0.24),
-                borderRadius: BorderRadius.circular(16),
-                child: InkWell(
-                  splashFactory: NoSplash.splashFactory,
-
-                  onTap: _hideErrorToast,
-                  borderRadius: BorderRadius.circular(16),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          LucideIcons.circle_alert,
-                          size: 20,
-                          color: overlayContext.c.onErrorContainer,
-                        ),
-                        const SizedBox(width: 10),
-                        Flexible(
-                          child: Text(
-                            message,
-                            style: overlayContext.t.titleMedium?.copyWith(
-                              color: overlayContext.c.onErrorContainer,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-    overlay.insert(_errorToast!);
-    _errorToastController.forward(from: 0);
-    _errorToastTimer = Timer(const Duration(seconds: 3), _hideErrorToast);
-  }
-
-  Future<void> _hideErrorToast({bool immediately = false}) async {
-    _errorToastTimer?.cancel();
-    _errorToastTimer = null;
-    final toast = _errorToast;
-    if (toast == null) return;
-    _errorToast = null;
-    if (!immediately && _errorToastController.value > 0) {
-      await _errorToastController.reverse();
-    }
-    toast.remove();
-    if (_errorToast == null) _errorToastController.reset();
   }
 
   Future<void> _delete() async {

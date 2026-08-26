@@ -3,6 +3,7 @@ import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
+import 'package:woolet/features/presentation/widgets/form_tile.dart';
 
 class ToAccountField extends StatelessWidget {
   final AccountEntity? account;
@@ -21,42 +22,41 @@ class ToAccountField extends StatelessWidget {
         : AppIcon.fromCode(selectedAccount.iconCode).icon;
     final accountName = selectedAccount?.name ?? 'Select account';
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('To account', style: context.t.titleLarge),
-        const SizedBox(height: 18),
-        Semantics(
-          button: true,
-          label: 'To account: $accountName',
-          child: Material(
-            color: context.c.surfaceContainer,
-            borderRadius: BorderRadius.circular(12),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: onTap,
-              splashFactory: NoSplash.splashFactory,
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    Icon(icon, size: 20, color: color),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(accountName, style: context.t.bodyMedium),
-                    ),
-                    Icon(
-                      LucideIcons.chevron_down,
-                      size: 18,
-                      color: context.c.onSurfaceVariant,
-                    ),
-                  ],
+    return Semantics(
+      button: onTap != null,
+      label: 'To account: $accountName',
+      child: FormTile(
+        icon: icon,
+        iconColor: color,
+        label: 'To account',
+        onTap: onTap,
+        trailing: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.sizeOf(context).width * 0.45,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  accountName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.t.bodyMedium?.copyWith(
+                    color: context.c.onSurfaceVariant,
+                  ),
                 ),
               ),
-            ),
+              const SizedBox(width: 6),
+              Icon(
+                LucideIcons.chevron_down,
+                size: 18,
+                color: context.c.onSurfaceVariant,
+              ),
+            ],
           ),
         ),
-      ],
+      ),
     );
   }
 }

@@ -90,28 +90,6 @@ class IconPicker extends StatelessWidget {
   }
 }
 
-class IconPreview extends StatelessWidget {
-  const IconPreview({super.key, required this.icon, required this.color});
-
-  final AppIcon icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 72,
-        height: 72,
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.18),
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Icon(icon.icon, color: color, size: 32),
-      ),
-    );
-  }
-}
-
 class IconPickerField extends StatelessWidget {
   const IconPickerField({
     super.key,
@@ -132,9 +110,9 @@ class IconPickerField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Text('Icon', style: context.t.titleLarge),
+            // Text('Icon', style: context.t.titleLarge),
             GestureDetector(
               onTap: onSeeAll,
               child: Text(

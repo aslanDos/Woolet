@@ -5,6 +5,7 @@ import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/core/settings/currency_controller.dart';
+import 'package:woolet/core/widgets/pressable.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
 import 'package:woolet/features/presentation/blocs/account/account_bloc.dart';
 import 'package:woolet/features/presentation/sheets/account_form_sheet.dart';
@@ -117,36 +118,20 @@ class _AllAccountsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: context.c.surfaceContainer,
-      borderRadius: BorderRadius.circular(12),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        splashFactory: NoSplash.splashFactory,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: context.c.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  LucideIcons.check_check,
-                  color: context.c.primary,
-                  size: 16,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text('All accounts', style: context.t.titleMedium),
-              ),
-            ],
-          ),
+    return Pressable(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: context.c.surfaceContainer,
+          borderRadius: .circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(LucideIcons.check_check, color: context.c.primary, size: 16),
+            const SizedBox(width: 12),
+            Expanded(child: Text('All accounts', style: context.t.titleMedium)),
+          ],
         ),
       ),
     );

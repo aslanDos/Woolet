@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/di/service_locator.dart';
-import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/core/settings/currency_controller.dart';
-import 'package:woolet/core/theme/app_colors.dart';
+import 'package:woolet/core/utils/amount_formatter.dart';
+import 'package:woolet/core/utils/amount_utils.dart';
 import 'package:woolet/core/utils/uuid.dart';
 import 'package:woolet/core/widgets/alert_dialog.dart';
+import 'package:woolet/core/widgets/error_toast.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
 import 'package:woolet/features/presentation/blocs/account/account_bloc.dart';
-import 'package:woolet/features/presentation/sheets/icon_picker_sheet.dart';
 import 'package:woolet/features/presentation/widgets/button.dart';
-import 'package:woolet/features/presentation/widgets/color_picker.dart';
 import 'package:woolet/features/presentation/widgets/custom_bottom_sheet.dart';
-import 'package:woolet/features/presentation/widgets/icon_picker.dart';
+import 'package:woolet/features/presentation/widgets/form_tile.dart';
+import 'package:woolet/features/presentation/widgets/icon_color_selector.dart';
 
 class AccountFormSheet extends StatelessWidget {
   const AccountFormSheet({super.key, this.account, this.onSaved});
@@ -43,14 +42,15 @@ class _AccountFormView extends StatefulWidget {
   State<_AccountFormView> createState() => _AccountFormViewState();
 }
 
-class _AccountFormViewState extends State<_AccountFormView> {
-  final _formKey = GlobalKey<FormState>();
+class _AccountFormViewState extends State<_AccountFormView>
+    with SingleTickerProviderStateMixin {
   late final TextEditingController _nameController;
   late final TextEditingController _balanceController;
   late AppIcon _icon;
   late Color _color;
   AccountEntity? _submittedAccount;
   bool _deleting = false;
+  late final ErrorToastController _errorToast;
 
   bool get _isEditing => widget.account != null;
   String get _currencyCode =>
@@ -62,16 +62,18 @@ class _AccountFormViewState extends State<_AccountFormView> {
     final account = widget.account;
     _nameController = TextEditingController(text: account?.name ?? '');
     _balanceController = TextEditingController(
-      text: _formatBalance(account?.balanceMinor ?? 0),
+      text: AmountUtils.formatMinor(account?.balanceMinor ?? 0),
     );
     _icon = AppIcon.fromCode(account?.iconCode ?? AppIcon.wallet.code);
     _color = account?.colorValue == null
         ? const Color(0xFF2563EB)
         : Color(account!.colorValue!);
+    _errorToast = ErrorToastController(vsync: this);
   }
 
   @override
   void dispose() {
+    _errorToast.dispose();
     _nameController.dispose();
     _balanceController.dispose();
     super.dispose();
@@ -83,7 +85,13 @@ class _AccountFormViewState extends State<_AccountFormView> {
       listenWhen: (previous, current) =>
           previous.isProcessing && !current.isProcessing,
       listener: (context, state) {
-        if (state.status == AccountStatus.failure) return;
+        if (state.status == AccountStatus.failure) {
+          _errorToast.show(
+            context,
+            state.errorMessage ?? 'Could not save account',
+          );
+          return;
+        }
         if (_deleting) {
           Navigator.pop(context);
           return;
@@ -94,11 +102,6 @@ class _AccountFormViewState extends State<_AccountFormView> {
         Navigator.pop(context, account);
       },
       builder: (context, state) {
-        final fieldBorder = OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        );
-
         return CustomBottomSheet(
           title: Text(_isEditing ? 'Edit account' : 'New account'),
           leading: IconButton.filled(
@@ -127,118 +130,100 @@ class _AccountFormViewState extends State<_AccountFormView> {
               ),
             ),
           ),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                IconPreview(icon: _icon, color: _color),
-                const SizedBox(height: 24),
-                Text('Name', style: context.t.titleLarge),
-                const SizedBox(height: 10),
-                TextFormField(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              IconColorSelector(
+                icon: _icon,
+                color: _color,
+                compact: true,
+                onIconChanged: (icon) => setState(() => _icon = icon),
+                onColorChanged: (color) => setState(() => _color = color),
+              ),
+              const SizedBox(height: 4),
+              FormTile(
+                icon: LucideIcons.a_large_small,
+                label: 'Name',
+                field: TextFormField(
                   controller: _nameController,
                   autofocus: !_isEditing,
                   maxLength: AccountEntity.maxNameLength,
                   textCapitalization: TextCapitalization.sentences,
                   style: context.t.bodyMedium,
-                  decoration: _fieldDecoration(
-                    context,
-                    border: fieldBorder,
+                  textAlign: TextAlign.end,
+                  decoration: _inlineFieldDecoration(
                     hintText: 'Account name',
-                  ).copyWith(counterText: ''),
-                  validator: (value) => value == null || value.trim().isEmpty
-                      ? 'Enter an account name'
-                      : null,
+                    hideCounter: true,
+                  ),
+                  onChanged: (_) => _errorToast.hide(),
+                  onTapOutside: (_) =>
+                      FocusManager.instance.primaryFocus?.unfocus(),
                 ),
-                const SizedBox(height: 24),
-                Text('Balance', style: context.t.titleLarge),
-                const SizedBox(height: 10),
-                TextFormField(
+              ),
+              const SizedBox(height: 4),
+              FormTile(
+                icon: LucideIcons.badge_dollar_sign,
+                label: 'Balance',
+                field: TextFormField(
                   controller: _balanceController,
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  inputFormatters: [_BalanceInputFormatter()],
+                  inputFormatters: const [AmountFormatter()],
                   style: context.t.bodyMedium,
-                  decoration: _fieldDecoration(
-                    context,
-                    border: fieldBorder,
-                    hintText: '0',
-                  ).copyWith(suffixText: _currencyCode),
-                  validator: (value) {
-                    final normalized = value?.replaceFirst(',', '.');
-                    return double.tryParse(normalized ?? '') == null
-                        ? 'Enter a valid balance'
-                        : null;
-                  },
+                  textAlign: TextAlign.end,
+                  decoration: _inlineFieldDecoration(hintText: '0'),
+                  onChanged: (_) => _errorToast.hide(),
+                  onTapOutside: (_) =>
+                      FocusManager.instance.primaryFocus?.unfocus(),
                 ),
-                const SizedBox(height: 24),
-                IconPickerField(
-                  selected: _icon,
-                  color: _color,
-                  onSeeAll: _openIconPicker,
-                  onChanged: (icon) => setState(() => _icon = icon),
-                ),
-                const SizedBox(height: 24),
-                Text('Color', style: context.t.titleLarge),
-                const SizedBox(height: 10),
-                ColorPicker(
-                  colors: AppColors.pickerColors,
-                  selected: _color,
-                  onChanged: (color) => setState(() => _color = color),
-                ),
-                if (state.errorMessage != null) ...[
-                  const SizedBox(height: 16),
-                  Text(
-                    state.errorMessage!,
-                    style: context.t.bodyMedium?.copyWith(
-                      color: context.c.error,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 24),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
     );
   }
 
-  InputDecoration _fieldDecoration(
-    BuildContext context, {
-    required OutlineInputBorder border,
+  InputDecoration _inlineFieldDecoration({
     required String hintText,
+    bool hideCounter = false,
   }) {
     return InputDecoration(
       hintText: hintText,
-      filled: true,
-      fillColor: context.c.surfaceContainer,
-      contentPadding: const EdgeInsets.all(12),
-      border: border,
-      enabledBorder: border,
-      focusedBorder: border,
-      errorBorder: border,
-      focusedErrorBorder: border,
+      counterText: hideCounter ? '' : null,
+      isCollapsed: true,
+      filled: false,
+      contentPadding: EdgeInsets.zero,
+      border: InputBorder.none,
+      enabledBorder: InputBorder.none,
+      focusedBorder: InputBorder.none,
+      disabledBorder: InputBorder.none,
+      errorBorder: InputBorder.none,
+      focusedErrorBorder: InputBorder.none,
     );
   }
 
   void _submit() {
     FocusManager.instance.primaryFocus?.unfocus();
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+    final name = _nameController.text.trim();
+    final balance = AmountUtils.parse(_balanceController.text);
+    String? error;
+    if (name.isEmpty) error = 'Enter an account name';
+    if (error == null && balance == null) error = 'Enter a valid balance';
+    if (error != null) {
+      _errorToast.show(context, error);
+      return;
+    }
 
     final original = widget.account;
-    final balance = double.parse(
-      _balanceController.text.replaceFirst(',', '.'),
-    );
     final account = AccountEntity(
       uuid: original?.uuid ?? createUuidV4(),
-      name: _nameController.text.trim(),
+      name: name,
       sortOrder: original?.sortOrder ?? -1,
       iconCode: _icon.code,
       currencyCode: _currencyCode,
-      balanceMinor: (balance * 100).round(),
+      balanceMinor: AmountUtils.toMinor(balance!),
       createdAt: original?.createdAt ?? DateTime.now().toUtc(),
       colorValue: _color.toARGB32(),
       visible: original?.visible ?? true,
@@ -251,15 +236,6 @@ class _AccountFormViewState extends State<_AccountFormView> {
           ? AccountCreateRequested(account)
           : AccountUpdateRequested(account),
     );
-  }
-
-  Future<void> _openIconPicker() async {
-    final selected = await context.openBottomSheet<AppIcon>(
-      showDragHandle: true,
-      child: IconPickerSheet(selected: _icon, color: _color),
-    );
-    if (selected == null || !mounted) return;
-    setState(() => _icon = selected);
   }
 
   Future<void> _delete() async {
@@ -277,24 +253,5 @@ class _AccountFormViewState extends State<_AccountFormView> {
 
     _deleting = true;
     context.read<AccountBloc>().add(AccountDeleteRequested(account.uuid));
-  }
-
-  String _formatBalance(int minor) {
-    final amount = minor / 100;
-    return amount == amount.truncateToDouble()
-        ? amount.toStringAsFixed(0)
-        : amount.toStringAsFixed(2);
-  }
-}
-
-class _BalanceInputFormatter extends TextInputFormatter {
-  static final _pattern = RegExp(r'^\d*(?:[.,]\d{0,2})?$');
-
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    return _pattern.hasMatch(newValue.text) ? newValue : oldValue;
   }
 }

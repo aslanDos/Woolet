@@ -19,9 +19,7 @@ class Navbar extends StatelessWidget {
 
   static const _items = <({IconData icon, String label})>[
     (icon: LucideIcons.receipt_text, label: 'Transactions'),
-    (icon: LucideIcons.chart_no_axes_column_increasing, label: 'Analytics'),
     (icon: LucideIcons.piggy_bank, label: 'Budgets'),
-    (icon: LucideIcons.settings, label: 'Settings'),
   ];
 
   @override
@@ -29,7 +27,7 @@ class Navbar extends StatelessWidget {
     final isDark = context.c.brightness == Brightness.dark;
 
     return SafeArea(
-      minimum: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      minimum: const EdgeInsets.fromLTRB(20, 0, 20, 24),
       child: Center(
         heightFactor: 1,
         child: ConstrainedBox(
@@ -38,25 +36,18 @@ class Navbar extends StatelessWidget {
             children: [
               Expanded(
                 child: Container(
-                  height: 58,
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  height: 62,
                   decoration: BoxDecoration(
                     color: isDark
                         ? context.c.surfaceContainerLow
                         : context.c.surface,
-                    borderRadius: BorderRadius.circular(38),
-                    border: isDark
-                        ? Border.all(color: context.c.outlineVariant)
-                        : null,
-                    boxShadow: isDark
-                        ? null
-                        : [
-                            BoxShadow(
-                              color: context.c.shadow.withValues(alpha: 0.12),
-                              blurRadius: 24,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
+                    borderRadius: BorderRadius.circular(32),
+                    border: Border.all(
+                      color: isDark
+                          ? context.c.outlineVariant
+                          : context.c.outlineVariant.withValues(alpha: 0.45),
+                    ),
+                    boxShadow: _floatingShadow(context, isDark),
                   ),
                   child: Row(children: List.generate(_items.length, _item)),
                 ),
@@ -84,6 +75,20 @@ class Navbar extends StatelessWidget {
     );
   }
 }
+
+List<BoxShadow> _floatingShadow(BuildContext context, bool isDark) => [
+  BoxShadow(
+    color: context.c.shadow.withValues(alpha: isDark ? 0.32 : 0.08),
+    blurRadius: 10,
+    spreadRadius: 1,
+    offset: const Offset(0, 2),
+  ),
+  BoxShadow(
+    color: context.c.shadow.withValues(alpha: isDark ? 0.4 : 0.16),
+    blurRadius: 28,
+    offset: const Offset(0, 10),
+  ),
+];
 
 class _NavbarButton extends StatelessWidget {
   const _NavbarButton({
@@ -168,19 +173,11 @@ class _AddButton extends StatelessWidget {
           )
           .toList(),
       child: SizedBox.square(
-        dimension: 58,
+        dimension: 62,
         child: DecoratedBox(
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            boxShadow: isDark
-                ? null
-                : [
-                    BoxShadow(
-                      color: colorScheme.shadow.withValues(alpha: 0.16),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
+            boxShadow: _floatingShadow(context, isDark),
           ),
           child: Material(
             color: colorScheme.primary,

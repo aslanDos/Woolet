@@ -1,0 +1,53 @@
+import 'package:woolet/core/constants/app_enums.dart';
+
+abstract final class AppDateUtils {
+  static const _weekdays = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+
+  static String weekdayName(DateTime value) => _weekdays[value.weekday - 1];
+
+  static DateTime shiftBudgetPeriod(
+    DateTime value,
+    BudgetPeriod period,
+    int offset,
+  ) {
+    return switch (period) {
+      BudgetPeriod.daily => value.add(Duration(days: offset)),
+      BudgetPeriod.weekly => value.add(Duration(days: offset * 7)),
+      BudgetPeriod.monthly => DateTime(value.year, value.month + offset, 1),
+      BudgetPeriod.yearly => DateTime(value.year + offset, value.month, 1),
+    };
+  }
+
+  static String formatNumeric(DateTime value, {DateTime? relativeTo}) {
+    final day = value.day.toString().padLeft(2, '0');
+    final month = value.month.toString().padLeft(2, '0');
+    final reference = relativeTo ?? DateTime.now();
+    return value.year == reference.year
+        ? '$day.$month'
+        : '$day.$month.${value.year}';
+  }
+
+  static String formatRange(
+    DateTime start,
+    DateTime endExclusive, {
+    DateTime? relativeTo,
+  }) {
+    final end = endExclusive.subtract(const Duration(days: 1));
+    final startLabel = formatNumeric(start, relativeTo: relativeTo);
+    if (_isSameDay(start, end)) return startLabel;
+    return '$startLabel — ${formatNumeric(end, relativeTo: relativeTo)}';
+  }
+
+  static bool _isSameDay(DateTime first, DateTime second) =>
+      first.year == second.year &&
+      first.month == second.month &&
+      first.day == second.day;
+}

@@ -10,6 +10,12 @@ extension TransactionTypeUI on TransactionType {
     TransactionType.transfer => 'Transfer',
   };
 
+  String get sign => switch (this) {
+    TransactionType.income => '+',
+    TransactionType.expense => '−',
+    TransactionType.transfer => '',
+  };
+
   IconData get icon => switch (this) {
     TransactionType.income => LucideIcons.arrow_down_right,
     TransactionType.expense => LucideIcons.arrow_up_left,

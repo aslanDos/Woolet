@@ -29,17 +29,19 @@ class AppTheme {
       regularPressShowsMenu: false,
       longPressDuration: const Duration(milliseconds: 350),
       buttonTheme: PieButtonTheme(
-        backgroundColor: scheme.secondary,
-        iconColor: scheme.onSecondary,
-      ),
-      buttonThemeHovered: PieButtonTheme(
-        backgroundColor: scheme.secondary,
+        backgroundColor: scheme.primary,
         iconColor: scheme.primary,
       ),
-      overlayColor: scheme.surface.withValues(alpha: 0.8),
+      buttonThemeHovered: PieButtonTheme(
+        backgroundColor: scheme.primary,
+        iconColor: scheme.primary,
+      ),
+      overlayColor: scheme.surface.withValues(alpha: 0.7),
       pointerColor: Colors.transparent,
       // pointerSize: 2.0,
-      tooltipTextStyle: appTextTheme.headlineLarge,
+      tooltipTextStyle: appTextTheme.headlineLarge?.copyWith(
+        color: scheme.primary,
+      ),
       menuAlignment: .center,
     );
 

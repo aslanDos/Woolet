@@ -68,9 +68,7 @@ class TypeToggle<T> extends StatelessWidget {
                 children: items.map((item) {
                   final isSelected = item.value == selected;
                   final foregroundColor = isSelected
-                      ? item.selectedForegroundColor ??
-                            selectedForegroundColor?.call(item.value) ??
-                            context.c.onPrimary
+                      ? Colors.white
                       : context.c.onSurfaceVariant;
 
                   return Expanded(
@@ -91,13 +89,10 @@ class TypeToggle<T> extends StatelessWidget {
                               child: AnimatedDefaultTextStyle(
                                 duration: const Duration(milliseconds: 200),
                                 style:
-                                    (isSelected
-                                            ? context.t.titleSmall
-                                            : context.t.titleSmall)
-                                        ?.copyWith(
-                                          color: foregroundColor,
-                                          fontSize: item.fontSize,
-                                        ) ??
+                                    context.t.titleSmall?.copyWith(
+                                      color: foregroundColor,
+                                      fontSize: item.fontSize,
+                                    ) ??
                                     TextStyle(
                                       color: foregroundColor,
                                       fontSize: item.fontSize,

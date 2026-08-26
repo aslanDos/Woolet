@@ -4,12 +4,22 @@ import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/extensions/category_type_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/features/domain/entities/category_entity.dart';
+import 'package:woolet/features/presentation/widgets/base_card.dart';
+import 'package:woolet/features/presentation/widgets/icon_preview.dart';
 
 class CategoryCard extends StatelessWidget {
   final CategoryEntity category;
   final VoidCallback? onTap;
+  final VoidCallback? onEdit;
+  final bool? selected;
 
-  const CategoryCard({super.key, required this.category, this.onTap});
+  const CategoryCard({
+    super.key,
+    required this.category,
+    this.onTap,
+    this.onEdit,
+    this.selected,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,51 +28,25 @@ class CategoryCard extends StatelessWidget {
         ? category.type.backgroundColor
         : Color(category.colorValue!);
 
-    return Semantics(
-      button: onTap != null,
-      label: category.name,
-      child: Material(
-        color: context.c.surfaceContainer,
-        borderRadius: BorderRadius.circular(12),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          splashFactory: NoSplash.splashFactory,
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
-              children: [
-                Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(appIcon.icon, color: accentColor, size: 22),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    category.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: context.t.titleMedium,
-                  ),
-                ),
-                if (onTap != null) ...[
-                  const SizedBox(width: 8),
-                  Icon(
-                    LucideIcons.chevron_right,
-                    size: 18,
-                    color: context.c.onSurfaceVariant,
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ),
+    return BaseCard(
+      onTap: onTap,
+      semanticLabel: category.name,
+      leading: IconPreview.card(icon: appIcon.icon, color: accentColor),
+      title: Text(
+        category.name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: context.t.titleMedium,
       ),
+      trailingSpacing: selected == null ? 0 : 8,
+      trailing: selected != null
+          ? Icon(selected! ? LucideIcons.check : LucideIcons.plus, size: 18)
+          : onEdit != null
+          ? IconButton(
+              onPressed: onEdit,
+              icon: const Icon(LucideIcons.pen, size: 19),
+            )
+          : null,
     );
   }
 }

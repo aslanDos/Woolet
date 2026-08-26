@@ -4,10 +4,12 @@ import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/core/extensions/transaction_type_x.dart';
 import 'package:woolet/core/settings/currency_controller.dart';
-import 'package:woolet/core/widgets/pressable.dart';
+import 'package:woolet/core/utils/amount_utils.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
 import 'package:woolet/features/domain/entities/category_entity.dart';
 import 'package:woolet/features/domain/entities/transaction_entity.dart';
+import 'package:woolet/features/presentation/widgets/base_card.dart';
+import 'package:woolet/features/presentation/widgets/icon_preview.dart';
 
 class TransactionCard extends StatelessWidget {
   const TransactionCard({
@@ -46,63 +48,29 @@ class TransactionCard extends StatelessWidget {
     final symbol = account == null
         ? currencyController.value.symbol
         : currencyController.symbolForCode(account!.currencyCode);
-    final sign = switch (transaction.type) {
-      TransactionType.income => '+',
-      TransactionType.expense => '−',
-      TransactionType.transfer => '',
-    };
-    final amount = transaction.amountMinor / 100;
-    final formatted = amount == amount.truncateToDouble()
-        ? amount.toStringAsFixed(0)
-        : amount.toStringAsFixed(2);
+    final formatted = AmountUtils.formatMinor(transaction.amountMinor);
 
-    return Pressable(
+    return BaseCard(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-        decoration: BoxDecoration(
-          color: context.c.surfaceContainer,
-          borderRadius: .circular(12),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: accent.withValues(alpha: 0.18),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: accent, size: 24),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: context.t.titleLarge),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: context.t.titleSmall?.copyWith(
-                      color: context.c.outline,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Text(
-              '$sign $formatted $symbol',
-              style: context.t.titleMedium?.copyWith(
-                color: switch (transaction.type) {
-                  TransactionType.income => context.appColors.income,
-                  TransactionType.expense => context.appColors.expense,
-                  TransactionType.transfer => context.c.primary,
-                },
-              ),
-            ),
-          ],
+      semanticLabel: title,
+      contentSpacing: 10,
+      subtitleSpacing: 4,
+      leading: IconPreview.card(icon: icon, color: accent),
+      title: Text(title, style: context.t.titleLarge),
+      subtitle: Text(
+        subtitle,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: context.t.titleSmall?.copyWith(color: context.c.outline),
+      ),
+      trailing: Text(
+        '${transaction.type.sign} $formatted $symbol',
+        style: context.t.titleMedium?.copyWith(
+          color: switch (transaction.type) {
+            TransactionType.income => context.appColors.income,
+            TransactionType.expense => context.appColors.expense,
+            TransactionType.transfer => context.c.primary,
+          },
         ),
       ),
     );

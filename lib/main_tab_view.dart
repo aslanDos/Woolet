@@ -5,10 +5,8 @@ import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
-import 'package:woolet/features/presentation/screens/analytics_screen.dart';
 import 'package:woolet/features/presentation/screens/budgets_screen.dart';
 import 'package:woolet/features/presentation/screens/home_screen.dart';
-import 'package:woolet/features/presentation/screens/settings_screen.dart';
 import 'package:woolet/features/presentation/blocs/transaction/transaction_bloc.dart';
 import 'package:woolet/features/presentation/sheets/transaction_form_sheet.dart';
 import 'package:woolet/features/presentation/widgets/navbar.dart';
@@ -30,7 +28,7 @@ class _MainTabViewState extends State<MainTabView>
   void initState() {
     super.initState();
     _tabController = TabController(
-      length: 4,
+      length: 2,
       initialIndex: _currentIndex,
       vsync: this,
     );
@@ -87,9 +85,7 @@ class _MainTabViewState extends State<MainTabView>
                     _homeAccount = account;
                   },
                 ),
-                const AnalyticsScreen(),
                 const BudgetsScreen(),
-                const SettingsScreen(),
               ],
             ),
           ),

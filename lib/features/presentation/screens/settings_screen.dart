@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
+import 'package:go_router/go_router.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
@@ -48,8 +49,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings', style: context.t.headlineLarge),
-        centerTitle: false,
+        leading: IconButton(
+          onPressed: () => context.pop(),
+          icon: Icon(LucideIcons.chevron_left),
+        ),
+        title: Text('Settings', style: context.t.headlineMedium),
+        // centerTitle: false,
       ),
       body: ValueListenableBuilder<ThemeMode>(
         valueListenable: _themeController,
@@ -59,7 +64,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               builder: (context, currency, _) => SafeArea(
                 top: false,
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
+                  padding: const EdgeInsets.all(16),
                   children: [
                     _SettingsGroup(
                       title: 'General',

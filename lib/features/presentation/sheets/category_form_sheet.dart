@@ -5,18 +5,16 @@ import 'package:woolet/core/constants/app_enums.dart';
 import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/category_type_x.dart';
-import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
-import 'package:woolet/core/theme/app_colors.dart';
 import 'package:woolet/core/utils/uuid.dart';
 import 'package:woolet/core/widgets/alert_dialog.dart';
+import 'package:woolet/core/widgets/error_toast.dart';
 import 'package:woolet/features/domain/entities/category_entity.dart';
 import 'package:woolet/features/presentation/blocs/category/category_bloc.dart';
-import 'package:woolet/features/presentation/sheets/icon_picker_sheet.dart';
 import 'package:woolet/features/presentation/widgets/button.dart';
-import 'package:woolet/features/presentation/widgets/color_picker.dart';
 import 'package:woolet/features/presentation/widgets/custom_bottom_sheet.dart';
-import 'package:woolet/features/presentation/widgets/icon_picker.dart';
+import 'package:woolet/features/presentation/widgets/form_tile.dart';
+import 'package:woolet/features/presentation/widgets/icon_color_selector.dart';
 import 'package:woolet/features/presentation/widgets/type_toggle.dart';
 
 class CategoryFormSheet extends StatelessWidget {
@@ -44,14 +42,15 @@ class _CategoryFormView extends StatefulWidget {
   State<_CategoryFormView> createState() => _CategoryFormViewState();
 }
 
-class _CategoryFormViewState extends State<_CategoryFormView> {
-  final _formKey = GlobalKey<FormState>();
+class _CategoryFormViewState extends State<_CategoryFormView>
+    with SingleTickerProviderStateMixin {
   late final TextEditingController _nameController;
   late CategoryType _type;
   late AppIcon _icon;
   late Color _color;
   CategoryEntity? _submittedCategory;
   bool _deleting = false;
+  late final ErrorToastController _errorToast;
 
   bool get _isEditing => widget.category != null;
 
@@ -65,10 +64,12 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
     _color = category?.colorValue == null
         ? _type.backgroundColor
         : Color(category!.colorValue!);
+    _errorToast = ErrorToastController(vsync: this);
   }
 
   @override
   void dispose() {
+    _errorToast.dispose();
     _nameController.dispose();
     super.dispose();
   }
@@ -79,7 +80,13 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
       listenWhen: (previous, current) =>
           previous.isProcessing && !current.isProcessing,
       listener: (context, state) {
-        if (state.status == CategoryStatus.failure) return;
+        if (state.status == CategoryStatus.failure) {
+          _errorToast.show(
+            context,
+            state.errorMessage ?? 'Could not save category',
+          );
+          return;
+        }
 
         if (_deleting) {
           Navigator.pop(context);
@@ -91,11 +98,6 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
         Navigator.pop(context, category);
       },
       builder: (context, state) {
-        final fieldBorder = OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        );
-
         return CustomBottomSheet(
           title: Text(_isEditing ? 'Edit category' : 'New category'),
           leading: IconButton.filled(
@@ -124,83 +126,64 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
               ),
             ),
           ),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TypeToggle<CategoryType>(
-                  items: CategoryType.values
-                      .map(
-                        (type) => TypeToggleItem(
-                          value: type,
-                          label: type.label,
-                          icon: type.icon,
-                          selectedBackgroundColor: type.backgroundColor,
-                        ),
-                      )
-                      .toList(growable: false),
-                  selected: _type,
-                  onChanged: (type) => setState(() => _type = type),
-                ),
-                const SizedBox(height: 24),
-                IconPreview(icon: _icon, color: _color),
-                const SizedBox(height: 24),
-                Text('Name', style: context.t.titleLarge),
-                const SizedBox(height: 10),
-                TextFormField(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TypeToggle<CategoryType>(
+                items: CategoryType.values
+                    .map(
+                      (type) => TypeToggleItem(
+                        value: type,
+                        label: type.label,
+                        icon: type.icon,
+                        selectedBackgroundColor: type.backgroundColor,
+                      ),
+                    )
+                    .toList(growable: false),
+                selected: _type,
+                onChanged: (type) => setState(() {
+                  _type = type;
+                  _errorToast.hide();
+                }),
+              ),
+              const SizedBox(height: 24),
+              IconColorSelector(
+                icon: _icon,
+                color: _color,
+                compact: true,
+                onIconChanged: (icon) => setState(() => _icon = icon),
+                onColorChanged: (color) => setState(() => _color = color),
+              ),
+              const SizedBox(height: 4),
+              FormTile(
+                icon: LucideIcons.a_large_small,
+                label: 'Name',
+                field: TextFormField(
                   controller: _nameController,
                   autofocus: !_isEditing,
                   maxLength: CategoryEntity.maxNameLength,
                   textCapitalization: TextCapitalization.sentences,
                   style: context.t.bodyMedium,
-                  decoration: InputDecoration(
+                  textAlign: TextAlign.end,
+                  decoration: const InputDecoration(
                     hintText: 'Category name',
                     counterText: '',
-                    filled: true,
-                    fillColor: context.c.surfaceContainer,
-                    contentPadding: const EdgeInsets.all(12),
-                    border: fieldBorder,
-                    enabledBorder: fieldBorder,
-                    focusedBorder: fieldBorder,
-                    errorBorder: fieldBorder,
-                    focusedErrorBorder: fieldBorder,
+                    isCollapsed: true,
+                    filled: false,
+                    contentPadding: EdgeInsets.zero,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    focusedErrorBorder: InputBorder.none,
                   ),
-                  onChanged: (_) => setState(() {}),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Enter a category name';
-                    }
-                    return null;
-                  },
+                  onChanged: (_) => _errorToast.hide(),
+                  onTapOutside: (_) =>
+                      FocusManager.instance.primaryFocus?.unfocus(),
                 ),
-                const SizedBox(height: 24),
-                IconPickerField(
-                  selected: _icon,
-                  color: _color,
-                  onSeeAll: _openIconPicker,
-                  onChanged: (icon) => setState(() => _icon = icon),
-                ),
-                const SizedBox(height: 24),
-                Text('Color', style: context.t.titleLarge),
-                const SizedBox(height: 10),
-                ColorPicker(
-                  colors: AppColors.pickerColors,
-                  selected: _color,
-                  onChanged: (color) => setState(() => _color = color),
-                ),
-                if (state.errorMessage != null) ...[
-                  const SizedBox(height: 16),
-                  Text(
-                    state.errorMessage!,
-                    style: context.t.bodyMedium?.copyWith(
-                      color: context.c.error,
-                    ),
-                  ),
-                ],
-                const SizedBox(height: 24),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
@@ -209,12 +192,16 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
 
   void _submit() {
     FocusManager.instance.primaryFocus?.unfocus();
-    if (!(_formKey.currentState?.validate() ?? false)) return;
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      _errorToast.show(context, 'Enter a category name');
+      return;
+    }
 
     final original = widget.category;
     final category = CategoryEntity(
       uuid: original?.uuid ?? createUuidV4(),
-      name: _nameController.text.trim(),
+      name: name,
       sortOrder: original?.sortOrder ?? -1,
       iconCode: _icon.code,
       createdAt: original?.createdAt ?? DateTime.now().toUtc(),
@@ -230,15 +217,6 @@ class _CategoryFormViewState extends State<_CategoryFormView> {
           ? CategoryCreateRequested(category)
           : CategoryUpdateRequested(category),
     );
-  }
-
-  Future<void> _openIconPicker() async {
-    final selected = await context.openBottomSheet<AppIcon>(
-      showDragHandle: true,
-      child: IconPickerSheet(selected: _icon, color: _color),
-    );
-    if (selected == null || !mounted) return;
-    setState(() => _icon = selected);
   }
 
   Future<void> _delete() async {

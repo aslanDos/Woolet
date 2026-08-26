@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/features/presentation/widgets/form_tile.dart';
 
 class NoteField extends StatelessWidget {
   const NoteField({super.key, this.controller});
@@ -8,31 +10,28 @@ class NoteField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final border = OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide.none,
-    );
-
-    return Column(
-      crossAxisAlignment: .start,
-      children: [
-        Text('Add a note', style: context.t.titleLarge),
-        const SizedBox(height: 18),
-        TextField(
-          controller: controller,
-          autocorrect: false,
-          style: context.t.bodyMedium,
-          decoration: InputDecoration(
-            hintText: 'Note',
-            filled: true,
-            fillColor: context.c.surfaceContainer,
-            contentPadding: const EdgeInsets.all(12),
-            border: border,
-            enabledBorder: border,
-            focusedBorder: border,
-          ),
+    return FormTile(
+      icon: LucideIcons.notebook_pen,
+      label: 'Note',
+      field: TextField(
+        controller: controller,
+        autocorrect: false,
+        style: context.t.bodyMedium,
+        textAlign: TextAlign.end,
+        decoration: const InputDecoration(
+          hintText: 'Add a note',
+          isCollapsed: true,
+          filled: false,
+          contentPadding: EdgeInsets.zero,
+          border: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          disabledBorder: InputBorder.none,
+          errorBorder: InputBorder.none,
+          focusedErrorBorder: InputBorder.none,
         ),
-      ],
+        onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
+      ),
     );
   }
 }
