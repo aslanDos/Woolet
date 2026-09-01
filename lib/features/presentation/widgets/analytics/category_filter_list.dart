@@ -62,11 +62,7 @@ class _AllCategoriesCard extends StatelessWidget {
               child: Text('All Categories', style: context.t.titleMedium),
             ),
             const SizedBox(width: 12),
-            _RoundCheckbox(
-              value: selected,
-              color: context.c.primary,
-              onChanged: onTap,
-            ),
+            _RoundCheckbox(value: selected, onChanged: onTap),
           ],
         ),
       ),
@@ -127,11 +123,7 @@ class _CategoryCard extends StatelessWidget {
               style: context.t.titleSmall,
             ),
             const SizedBox(width: 10),
-            _RoundCheckbox(
-              value: selected,
-              color: segment.color,
-              onChanged: onTap,
-            ),
+            _RoundCheckbox(value: selected, onChanged: onTap),
           ],
         ),
       ),
@@ -156,14 +148,9 @@ class _CardContainer extends StatelessWidget {
 }
 
 class _RoundCheckbox extends StatelessWidget {
-  const _RoundCheckbox({
-    required this.value,
-    required this.color,
-    required this.onChanged,
-  });
+  const _RoundCheckbox({required this.value, required this.onChanged});
 
   final bool value;
-  final Color color;
   final VoidCallback onChanged;
 
   @override
@@ -173,7 +160,6 @@ class _RoundCheckbox extends StatelessWidget {
     child: Checkbox(
       value: value,
       onChanged: (_) => onChanged(),
-      activeColor: color,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       visualDensity: VisualDensity.compact,
       side: BorderSide(color: context.c.onSurfaceVariant, width: 1.5),

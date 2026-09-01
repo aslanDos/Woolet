@@ -94,7 +94,7 @@ class _CategoriesSheetViewState extends State<_CategoriesSheetView> {
   @override
   Widget build(BuildContext context) {
     return CustomBottomSheet(
-      safeAreaBottom: widget.bottomSafeArea,
+      safeAreaBottom: false,
       height: MediaQuery.sizeOf(context).height * 0.677,
       leading: IconButton.filled(
         onPressed: () => Navigator.pop(context),

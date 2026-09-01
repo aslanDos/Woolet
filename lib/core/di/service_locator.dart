@@ -38,6 +38,7 @@ final sl = GetIt.instance;
 
 Future<void> initDependencies() async {
   final preferences = await SharedPreferences.getInstance();
+  sl.registerSingleton<SharedPreferences>(preferences);
   sl.registerLazySingleton<ThemeController>(() => ThemeController(preferences));
   final currencyController = await CurrencyController.create(preferences);
   sl.registerSingleton<CurrencyController>(currencyController);

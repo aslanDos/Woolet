@@ -192,6 +192,7 @@ class _TransactionFormSheetState extends State<TransactionFormSheet>
             mainAxisSize: MainAxisSize.min,
             children: [
               TypeToggle<TransactionType>(
+                showLabels: false,
                 items: TransactionType.values
                     .map(
                       (type) => TypeToggleItem(

@@ -41,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animationController.forward().then((_) {
       if (mounted) {
-        context.go(AppRoutes.main);
+        context.go(AppRoutes.onboarding);
       }
     });
   }

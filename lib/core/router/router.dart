@@ -1,6 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:woolet/core/router/routes.dart';
 import 'package:woolet/features/presentation/screens/analytics_screen.dart';
+import 'package:woolet/features/presentation/screens/auth_screen.dart';
+import 'package:woolet/features/presentation/screens/onboarding_screen.dart';
 import 'package:woolet/features/presentation/screens/settings_screen.dart';
 import 'package:woolet/features/presentation/screens/splash_screen.dart';
 import 'package:woolet/main_tab_view.dart';
@@ -15,6 +18,22 @@ class AppRouter {
         path: AppRoutes.splash,
         pageBuilder: (context, state) =>
             const NoTransitionPage(child: SplashScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.onboarding,
+        pageBuilder: (context, state) => CustomTransitionPage(
+          child: const OnboardingScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+              FadeTransition(opacity: animation, child: child),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.login,
+        builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.register,
+        builder: (context, state) => const RegisterScreen(),
       ),
       GoRoute(
         path: AppRoutes.main,
