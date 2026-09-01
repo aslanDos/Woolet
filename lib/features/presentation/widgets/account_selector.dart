@@ -55,6 +55,8 @@ class AccountSelector extends StatelessWidget {
             Flexible(
               child: Text(
                 text,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
                 style: context.t.titleMedium?.copyWith(color: textColor),
               ),
             ),

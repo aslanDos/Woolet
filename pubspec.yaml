@@ -28,6 +28,7 @@ dependencies:
   drift: 2.28.2
   drift_flutter: 0.2.7
   get_it: ^9.2.1
+  fl_chart: ^1.2.0
 
 dev_dependencies:
   flutter_test:

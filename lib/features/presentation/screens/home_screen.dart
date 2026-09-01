@@ -19,7 +19,9 @@ import 'package:woolet/features/presentation/sheets/accounts_sheet.dart';
 import 'package:woolet/features/presentation/sheets/periods_sheet.dart';
 import 'package:woolet/features/presentation/sheets/transaction_form_sheet.dart';
 import 'package:woolet/features/presentation/sheets/transaction_filter_sheet.dart';
-import 'package:woolet/features/presentation/widgets/account_overview.dart';
+import 'package:woolet/features/presentation/widgets/account_balance_summary.dart';
+import 'package:woolet/features/presentation/widgets/account_selector.dart';
+import 'package:woolet/features/presentation/widgets/period_selector.dart';
 import 'package:woolet/features/presentation/widgets/transaction_card.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -164,7 +166,28 @@ class _HomeContentState extends State<_HomeContent> {
                     .fold<int>(0, (sum, value) => sum + value.amountMinor);
                 return Column(
                   children: [
-                    AccountOverview(
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Flexible(
+                          child: AccountSelector(
+                            account: selectedAccount,
+                            onTap: _openAccountSelector,
+                            background: true,
+                            allAccounts: _allAccountsSelected,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        PeriodSelector(
+                          period: _period,
+                          onTap: _openPeriodSelector,
+                          onPrevious: () => _changePeriod(-1),
+                          onNext: () => _changePeriod(1),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+                    AccountBalanceSummary(
                       account: selectedAccount,
                       currencySymbol: selectedAccount == null
                           ? currency.value.symbol
@@ -181,11 +204,6 @@ class _HomeContentState extends State<_HomeContent> {
                           : null,
                       incomeMinor: incomeMinor,
                       expenseMinor: expenseMinor,
-                      period: _period,
-                      onAccountTap: _openAccountSelector,
-                      onPeriodTap: _openPeriodSelector,
-                      onPreviousPeriod: () => _changePeriod(-1),
-                      onNextPeriod: () => _changePeriod(1),
                     ),
                     const SizedBox(height: 16),
                     Expanded(
