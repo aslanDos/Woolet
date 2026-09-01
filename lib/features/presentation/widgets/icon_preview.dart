@@ -19,6 +19,16 @@ class IconPreview extends StatelessWidget {
        borderRadius = 12,
        centered = false;
 
+  const IconPreview.compact({
+    super.key,
+    required IconData icon,
+    required this.color,
+  }) : _icon = icon,
+       size = 32,
+       iconSize = 18,
+       borderRadius = 9,
+       centered = false;
+
   final Object _icon;
   final Color color;
   final double size;

@@ -16,6 +16,7 @@ class CustomBottomSheet extends StatelessWidget {
     this.footer,
     this.footerExtent = 72,
     this.safeAreaBottom = true,
+    this.showDragHandle = false,
   });
 
   final Widget child;
@@ -28,6 +29,7 @@ class CustomBottomSheet extends StatelessWidget {
   final Widget? footer;
   final double footerExtent;
   final bool safeAreaBottom;
+  final bool showDragHandle;
 
   bool get _hasHeader => title != null || leading != null || actions.isNotEmpty;
 
@@ -62,6 +64,17 @@ class CustomBottomSheet extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (showDragHandle) ...[
+                  Container(
+                    width: 32,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: context.c.onSurfaceVariant.withValues(alpha: .4),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
                 if (_hasHeader) ...[
                   _BottomSheetHeader(
                     title: title,

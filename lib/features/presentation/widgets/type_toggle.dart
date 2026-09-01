@@ -10,6 +10,7 @@ class TypeToggle<T> extends StatelessWidget {
     this.backgroundColor,
     this.selectedBackgroundColor,
     this.selectedForegroundColor,
+    this.showLabels = true,
   });
 
   final List<TypeToggleItem<T>> items;
@@ -18,6 +19,7 @@ class TypeToggle<T> extends StatelessWidget {
   final Color? backgroundColor;
   final Color Function(T value)? selectedBackgroundColor;
   final Color Function(T value)? selectedForegroundColor;
+  final bool showLabels;
 
   @override
   Widget build(BuildContext context) {
@@ -68,13 +70,15 @@ class TypeToggle<T> extends StatelessWidget {
                 children: items.map((item) {
                   final isSelected = item.value == selected;
                   final foregroundColor = isSelected
-                      ? Colors.white
+                      ? selectedForegroundColor?.call(item.value) ??
+                            Colors.white
                       : context.c.onSurfaceVariant;
 
                   return Expanded(
                     child: Semantics(
                       button: true,
                       selected: isSelected,
+                      label: item.label,
                       child: Material(
                         color: Colors.transparent,
                         child: InkWell(
@@ -111,8 +115,10 @@ class TypeToggle<T> extends StatelessWidget {
                                         color: foregroundColor,
                                       ),
                                     ),
-                                    const SizedBox(width: 4),
-                                    Text(item.label),
+                                    if (showLabels) ...[
+                                      const SizedBox(width: 4),
+                                      Text(item.label),
+                                    ],
                                   ],
                                 ),
                               ),

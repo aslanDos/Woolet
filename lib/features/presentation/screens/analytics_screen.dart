@@ -9,9 +9,11 @@ import 'package:woolet/features/domain/entities/account_entity.dart';
 import 'package:woolet/features/domain/entities/analytics_entity.dart';
 import 'package:woolet/features/presentation/blocs/account/account_bloc.dart';
 import 'package:woolet/features/presentation/blocs/analytics/analytics_bloc.dart';
+import 'package:woolet/features/presentation/blocs/category/category_bloc.dart';
 import 'package:woolet/features/presentation/sheets/accounts_sheet.dart';
 import 'package:woolet/features/presentation/sheets/periods_sheet.dart';
 import 'package:woolet/features/presentation/widgets/account_selector.dart';
+import 'package:woolet/features/presentation/widgets/analytics/category_breakdown.dart';
 import 'package:woolet/features/presentation/widgets/analytics/income_expenses_chart.dart';
 import 'package:woolet/features/presentation/widgets/period_selector.dart';
 
@@ -24,6 +26,9 @@ class AnalyticsScreen extends StatelessWidget {
       BlocProvider(create: (_) => sl<AnalyticsBloc>()),
       BlocProvider(
         create: (_) => sl<AccountBloc>()..add(const AccountLoadRequested()),
+      ),
+      BlocProvider(
+        create: (_) => sl<CategoryBloc>()..add(const CategoryLoadRequested()),
       ),
     ],
     child: const _AnalyticsView(),
@@ -99,6 +104,7 @@ class _AnalyticsViewState extends State<_AnalyticsView> {
       ),
       body: SafeArea(
         top: false,
+        bottom: false,
         child: BlocBuilder<AnalyticsBloc, AnalyticsState>(
           builder: (context, state) {
             if (state.status == AnalyticsStatus.initial ||
@@ -139,11 +145,26 @@ class _AnalyticsViewState extends State<_AnalyticsView> {
           ],
         ),
         const SizedBox(height: 12),
-        IncomeExpensesChart(
-          income: analytics.incomeTrend,
-          expenses: analytics.spendingTrend,
-          period: _period,
-        ),
+        if (_period.type != PeriodType.allTime)
+          IncomeExpensesChart(
+            income: analytics.incomeTrend,
+            expenses: analytics.spendingTrend,
+            period: _period,
+          ),
+        if (analytics.categoryTotals.isNotEmpty ||
+            analytics.incomeCategoryTotals.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          BlocBuilder<CategoryBloc, CategoryState>(
+            builder: (context, state) => CategoryBreakdown(
+              incomeValues: analytics.incomeCategoryTotals,
+              expenseValues: analytics.categoryTotals,
+              categories: state.categories,
+              incomeTotalMinor: analytics.incomeMinor,
+              expenseTotalMinor: analytics.expenseMinor,
+              symbol: null,
+            ),
+          ),
+        ],
       ],
     );
   }

@@ -151,7 +151,8 @@ class _PeriodsSheetState extends State<PeriodsSheet> {
   @override
   Widget build(BuildContext context) {
     return CustomBottomSheet(
-      padding: EdgeInsetsGeometry.fromLTRB(16, 32, 16, 0),
+      showDragHandle: true,
+      padding: EdgeInsetsGeometry.fromLTRB(16, 16, 16, 0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -33,6 +33,7 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
       var expense = 0;
       final incomeDaily = <DateTime, int>{};
       final daily = <DateTime, int>{};
+      final incomeCategories = <String?, int>{};
       final categories = <String?, int>{};
 
       for (final transaction in transactions) {
@@ -45,6 +46,11 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
           );
           incomeDaily.update(
             date,
+            (value) => value + transaction.amountMinor,
+            ifAbsent: () => transaction.amountMinor,
+          );
+          incomeCategories.update(
+            transaction.categoryUuid,
             (value) => value + transaction.amountMinor,
             ifAbsent: () => transaction.amountMinor,
           );
@@ -98,6 +104,19 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
               (first, second) =>
                   second.amountMinor.compareTo(first.amountMinor),
             );
+      final incomeCategoryTotals =
+          incomeCategories.entries
+              .map(
+                (entry) => AnalyticsCategoryTotal(
+                  categoryUuid: entry.key,
+                  amountMinor: entry.value,
+                ),
+              )
+              .toList()
+            ..sort(
+              (first, second) =>
+                  second.amountMinor.compareTo(first.amountMinor),
+            );
       final biggestDay = daily.values.fold<int>(0, math.max);
 
       return Right(
@@ -108,6 +127,7 @@ class AnalyticsRepositoryImpl implements AnalyticsRepository {
           dailyAverageMinor: daily.isEmpty ? 0 : expense ~/ daily.length,
           incomeTrend: List.unmodifiable(incomeTrend),
           spendingTrend: List.unmodifiable(trend),
+          incomeCategoryTotals: List.unmodifiable(incomeCategoryTotals),
           categoryTotals: List.unmodifiable(categoryTotals),
         ),
       );

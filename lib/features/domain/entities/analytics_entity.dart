@@ -31,6 +31,7 @@ class AnalyticsEntity extends Equatable {
     required this.dailyAverageMinor,
     required this.incomeTrend,
     required this.spendingTrend,
+    required this.incomeCategoryTotals,
     required this.categoryTotals,
   });
 
@@ -41,6 +42,7 @@ class AnalyticsEntity extends Equatable {
       dailyAverageMinor = 0,
       incomeTrend = const [],
       spendingTrend = const [],
+      incomeCategoryTotals = const [],
       categoryTotals = const [];
 
   final int incomeMinor;
@@ -49,6 +51,7 @@ class AnalyticsEntity extends Equatable {
   final int dailyAverageMinor;
   final List<AnalyticsPoint> incomeTrend;
   final List<AnalyticsPoint> spendingTrend;
+  final List<AnalyticsCategoryTotal> incomeCategoryTotals;
   final List<AnalyticsCategoryTotal> categoryTotals;
 
   int get netCashFlowMinor => incomeMinor - expenseMinor;
@@ -61,6 +64,7 @@ class AnalyticsEntity extends Equatable {
     dailyAverageMinor,
     incomeTrend,
     spendingTrend,
+    incomeCategoryTotals,
     categoryTotals,
   ];
 }

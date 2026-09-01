@@ -2,7 +2,9 @@ import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/settings/currency_controller.dart';
 import 'package:woolet/core/utils/amount_utils.dart';
 import 'package:woolet/features/domain/entities/analytics_entity.dart';
 import 'package:woolet/features/presentation/sheets/periods_sheet.dart';
@@ -31,7 +33,7 @@ class _IncomeExpensesChartState extends State<IncomeExpensesChart> {
     final groups = _groups(widget.income, widget.expenses);
     final highest = groups.fold<int>(
       0,
-      (value, group) => math.max(value, math.max(group.income, group.expense)),
+      (value, group) => math.max(value, group.income + group.expense),
     );
     return Container(
       height: 280,
@@ -46,10 +48,7 @@ class _IncomeExpensesChartState extends State<IncomeExpensesChart> {
           Row(
             children: [
               Expanded(
-                child: Text(
-                  'Income and expenses',
-                  style: context.t.titleMedium,
-                ),
+                child: Text('Income and expenses', style: context.t.titleLarge),
               ),
               _Legend(color: context.appColors.income, label: 'Income'),
               const SizedBox(width: 12),
@@ -58,12 +57,20 @@ class _IncomeExpensesChartState extends State<IncomeExpensesChart> {
           ),
           const SizedBox(height: 24),
           Expanded(
-            child: highest == 0
-                ? const _EmptyChart()
-                : BarChart(
-                    _chartData(context, groups, highest),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                if (highest == 0) return const _EmptyChart();
+
+                return SizedBox(
+                  width: constraints.maxWidth,
+                  height: constraints.maxHeight,
+                  child: BarChart(
+                    _chartData(context, groups, highest, constraints.maxWidth),
                     duration: Duration.zero,
                   ),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -74,10 +81,16 @@ class _IncomeExpensesChartState extends State<IncomeExpensesChart> {
     BuildContext context,
     List<_ChartGroup> groups,
     int highest,
+    double chartWidth,
   ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final maxY = _axisMaximum(highest).toDouble();
     final interval = maxY / 4;
-    final width = math.min(10.0, math.max(5.0, 72 / groups.length));
+    final availablePlotWidth = math.max(0.0, chartWidth - 36);
+    final slotWidth = availablePlotWidth / groups.length;
+    final width = widget.period.type == PeriodType.day
+        ? math.min(48.0, math.max(10.0, slotWidth * .35))
+        : math.min(10.0, math.max(3.0, slotWidth * .45));
     final gridColor = context.c.outlineVariant.withValues(alpha: .6);
     return BarChartData(
       alignment: BarChartAlignment.spaceAround,
@@ -86,10 +99,7 @@ class _IncomeExpensesChartState extends State<IncomeExpensesChart> {
       barTouchData: BarTouchData(
         enabled: true,
         handleBuiltInTouches: false,
-        touchExtraThreshold: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 240,
-        ),
+        touchExtraThreshold: EdgeInsets.zero,
         touchCallback: (event, response) {
           final groupIndex = event.isInterestedForInteractions
               ? response?.spot?.touchedBarGroupIndex
@@ -98,7 +108,8 @@ class _IncomeExpensesChartState extends State<IncomeExpensesChart> {
           setState(() => _hoveredGroup = groupIndex);
         },
         touchTooltipData: BarTouchTooltipData(
-          getTooltipColor: (_) => context.c.primary,
+          getTooltipColor: (_) =>
+              isDark ? context.c.surfaceContainerHighest : context.c.primary,
           tooltipPadding: const EdgeInsets.symmetric(
             horizontal: 10,
             vertical: 8,
@@ -130,11 +141,14 @@ class _IncomeExpensesChartState extends State<IncomeExpensesChart> {
         for (var index = 0; index < groups.length; index++)
           BarChartGroupData(
             x: index,
-            barsSpace: 3,
             showingTooltipIndicators: _hoveredGroup == index ? [0] : [],
             barRods: [
-              _bar(groups[index].income, width, context.appColors.income),
-              _bar(groups[index].expense, width, context.appColors.expense),
+              _stackedBar(
+                groups[index],
+                width,
+                context.appColors.income,
+                context.appColors.expense,
+              ),
             ],
           ),
       ],
@@ -157,6 +171,10 @@ class _IncomeExpensesChartState extends State<IncomeExpensesChart> {
             ? const SizedBox.shrink()
             : SideTitleWidget(
                 meta: meta,
+                fitInside: SideTitleFitInsideData.fromTitleMeta(
+                  meta,
+                  distanceFromEdge: 2,
+                ),
                 child: Text(
                   _compactNumber(value.round()),
                   // textAlign: .end,
@@ -180,7 +198,7 @@ class _IncomeExpensesChartState extends State<IncomeExpensesChart> {
             meta: meta,
             space: 8,
             child: Text(
-              groups[index].label,
+              groups[index].showLabel ? groups[index].label : '',
               style: context.t.labelSmall?.copyWith(
                 color: context.c.outline,
                 fontSize: 10,
@@ -192,30 +210,48 @@ class _IncomeExpensesChartState extends State<IncomeExpensesChart> {
     ),
   );
 
-  BarChartRodData _bar(int value, double width, Color color) => BarChartRodData(
-    toY: value.toDouble(),
-    width: width,
-    color: color,
-    borderRadius: BorderRadius.circular(8),
-  );
+  BarChartRodData _stackedBar(
+    _ChartGroup group,
+    double width,
+    Color incomeColor,
+    Color expenseColor,
+  ) {
+    final income = group.income.toDouble();
+    final total = income + group.expense;
+    return BarChartRodData(
+      toY: total,
+      width: width,
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(4),
+      rodStackItems: [
+        if (group.income > 0) BarChartRodStackItem(0, income, incomeColor),
+        if (group.expense > 0)
+          BarChartRodStackItem(income, total, expenseColor),
+      ],
+    );
+  }
 
   BarTooltipItem _tooltipItem(BuildContext context, _ChartGroup group) {
+    final currencySymbol = sl<CurrencyController>().value.symbol;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return BarTooltipItem(
-      group.label,
+      group.tooltipLabel ?? group.label,
       context.t.labelMedium!.copyWith(
-        color: context.c.onInverseSurface,
+        color: isDark ? context.c.onSurface : context.c.onPrimary,
         height: 1.4,
       ),
       textAlign: .start,
       children: [
         if (group.income > 0)
           TextSpan(
-            text: '\n+ ${AmountUtils.formatMinor(group.income)}',
+            text:
+                '\n+ ${AmountUtils.formatMinor(group.income)} $currencySymbol',
             style: TextStyle(color: context.appColors.income),
           ),
         if (group.expense > 0)
           TextSpan(
-            text: '\n− ${AmountUtils.formatMinor(group.expense)}',
+            text:
+                '\n− ${AmountUtils.formatMinor(group.expense)} $currencySymbol',
             style: TextStyle(color: context.appColors.expense),
           ),
       ],
@@ -231,10 +267,104 @@ class _IncomeExpensesChartState extends State<IncomeExpensesChart> {
     List<AnalyticsPoint> income,
     List<AnalyticsPoint> expenses,
   ) {
-    if (widget.period.type == PeriodType.year) {
-      return _yearGroups(income, expenses, widget.period.anchor.year);
-    }
+    return switch (widget.period.type) {
+      PeriodType.day => _dailyGroups(income, expenses, widget.period.anchor, 1),
+      PeriodType.week => _dailyGroups(
+        income,
+        expenses,
+        widget.period.anchor.subtract(
+          Duration(days: widget.period.anchor.weekday - 1),
+        ),
+        7,
+      ),
+      PeriodType.month => _monthGroups(
+        income,
+        expenses,
+        DateTime(widget.period.anchor.year, widget.period.anchor.month),
+      ),
+      PeriodType.year => _yearGroups(
+        income,
+        expenses,
+        widget.period.anchor.year,
+      ),
+      PeriodType.lastWeek => _lastWeekGroups(income, expenses),
+      PeriodType.lastMonth => _lastMonthGroups(income, expenses),
+      PeriodType.allTime ||
+      PeriodType.custom => _dataRangeGroups(income, expenses),
+    };
+  }
 
+  List<_ChartGroup> _lastWeekGroups(
+    List<AnalyticsPoint> income,
+    List<AnalyticsPoint> expenses,
+  ) {
+    final today = _dateOnly(DateTime.now());
+    final thisWeek = today.subtract(Duration(days: today.weekday - 1));
+    return _dailyGroups(
+      income,
+      expenses,
+      thisWeek.subtract(const Duration(days: 7)),
+      7,
+    );
+  }
+
+  List<_ChartGroup> _lastMonthGroups(
+    List<AnalyticsPoint> income,
+    List<AnalyticsPoint> expenses,
+  ) {
+    final now = DateTime.now();
+    return _monthGroups(income, expenses, DateTime(now.year, now.month - 1));
+  }
+
+  List<_ChartGroup> _monthGroups(
+    List<AnalyticsPoint> income,
+    List<AnalyticsPoint> expenses,
+    DateTime month,
+  ) {
+    final days = DateTime(month.year, month.month + 1, 0).day;
+    return _dailyGroups(income, expenses, month, days, sparseLabels: true);
+  }
+
+  List<_ChartGroup> _dailyGroups(
+    List<AnalyticsPoint> income,
+    List<AnalyticsPoint> expenses,
+    DateTime start,
+    int dayCount, {
+    bool sparseLabels = false,
+  }) {
+    final incomeByDate = _amountsByDate(income, false);
+    final expensesByDate = _amountsByDate(expenses, false);
+    return [
+      for (var index = 0; index < dayCount; index++)
+        _dailyGroup(
+          start.add(Duration(days: index)),
+          incomeByDate,
+          expensesByDate,
+          showLabel: !sparseLabels || index.isEven,
+        ),
+    ];
+  }
+
+  _ChartGroup _dailyGroup(
+    DateTime date,
+    Map<DateTime, int> incomeByDate,
+    Map<DateTime, int> expensesByDate, {
+    required bool showLabel,
+  }) {
+    final day = _dateOnly(date);
+    return _ChartGroup(
+      '${day.day}',
+      incomeByDate[day] ?? 0,
+      expensesByDate[day] ?? 0,
+      showLabel: showLabel,
+      tooltipLabel: '${day.day} ${_monthLabel(day.month)}',
+    );
+  }
+
+  List<_ChartGroup> _dataRangeGroups(
+    List<AnalyticsPoint> income,
+    List<AnalyticsPoint> expenses,
+  ) {
     final all = [...income, ...expenses];
     if (all.isEmpty) return const [_ChartGroup('', 0, 0)];
     final first = all
@@ -264,6 +394,9 @@ class _IncomeExpensesChartState extends State<IncomeExpensesChart> {
         ),
     ];
   }
+
+  DateTime _dateOnly(DateTime value) =>
+      DateTime(value.year, value.month, value.day);
 
   List<_ChartGroup> _yearGroups(
     List<AnalyticsPoint> income,
@@ -341,10 +474,18 @@ class _IncomeExpensesChartState extends State<IncomeExpensesChart> {
 }
 
 class _ChartGroup {
-  const _ChartGroup(this.label, this.income, this.expense);
+  const _ChartGroup(
+    this.label,
+    this.income,
+    this.expense, {
+    this.showLabel = true,
+    this.tooltipLabel,
+  });
   final String label;
   final int income;
   final int expense;
+  final bool showLabel;
+  final String? tooltipLabel;
 }
 
 class _Legend extends StatelessWidget {
@@ -359,7 +500,7 @@ class _Legend extends StatelessWidget {
       DecoratedBox(
         decoration: BoxDecoration(
           color: color,
-          borderRadius: BorderRadius.circular(2),
+          borderRadius: BorderRadius.circular(8),
         ),
         child: const SizedBox(width: 7, height: 7),
       ),
