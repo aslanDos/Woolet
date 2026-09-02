@@ -50,6 +50,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
+  void _back() {
+    _pageController.previousPage(
+      duration: const Duration(milliseconds: 650),
+      curve: Curves.easeInOutCubicEmphasized,
+    );
+  }
+
   @override
   void dispose() {
     _pageController.dispose();
@@ -64,9 +71,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-              child: Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(onPressed: _skip, child: const Text('Skip')),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  if (_page > 0)
+                    BackButton(onPressed: _back)
+                  else
+                    const SizedBox(width: 48),
+                  TextButton(onPressed: _skip, child: const Text('Skip')),
+                ],
               ),
             ),
             Expanded(
