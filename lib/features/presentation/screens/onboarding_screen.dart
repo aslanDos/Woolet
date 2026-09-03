@@ -4,6 +4,7 @@ import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:woolet/core/constants/app_enums.dart';
+import 'package:woolet/core/constants/app_constants.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/core/router/routes.dart';
@@ -25,18 +26,20 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
-  static const _completedKey = 'onboarding_completed';
   static const _pageCount = 3;
 
   final _pageController = PageController();
   int _page = 0;
 
   Future<void> _finish() async {
-    await sl<SharedPreferences>().setBool(_completedKey, true);
+    await sl<SharedPreferences>().setBool(
+      AppConstants.onboardingCompletedKey,
+      true,
+    );
     if (mounted) context.go(AppRoutes.login);
   }
 
-  void _skip() => context.go(AppRoutes.main);
+  void _skip() => _finish();
 
   void _next() {
     if (_page == _pageCount - 1) {

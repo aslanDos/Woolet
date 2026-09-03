@@ -1,12 +1,16 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:woolet/core/bootstrap/app_bootstrap.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/router/router.dart';
 import 'package:woolet/core/theme/app_theme.dart';
 import 'package:woolet/core/theme/theme_controller.dart';
+import 'package:woolet/firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   await bootstrapApp();
 

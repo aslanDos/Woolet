@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "552632072612",
+    "project_id": "woolet-73336",
+    "storage_bucket": "woolet-73336.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:552632072612:android:b127eecc7968d70b036931",
+        "android_client_info": {
+          "package_name": "com.aslandev.woolet"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA03JVSO7F4NEibYFluJcTJMK4DYr7MAbo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -29,6 +29,8 @@ dependencies:
   drift_flutter: 0.2.7
   get_it: ^9.2.1
   fl_chart: ^1.2.0
+  firebase_core: ^4.14.0
+  firebase_auth: ^6.6.1
 
 dev_dependencies:
   flutter_test:

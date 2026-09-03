@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:woolet/core/router/routes.dart';
 import 'package:woolet/features/presentation/screens/analytics_screen.dart';
@@ -21,11 +20,8 @@ class AppRouter {
       ),
       GoRoute(
         path: AppRoutes.onboarding,
-        pageBuilder: (context, state) => CustomTransitionPage(
-          child: const OnboardingScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) =>
-              FadeTransition(opacity: animation, child: child),
-        ),
+        pageBuilder: (context, state) =>
+            NoTransitionPage(child: const OnboardingScreen()),
       ),
       GoRoute(
         path: AppRoutes.login,

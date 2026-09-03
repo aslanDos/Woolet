@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:woolet/core/database/app_database.dart';
@@ -5,6 +6,8 @@ import 'package:woolet/core/settings/currency_controller.dart';
 import 'package:woolet/core/theme/theme_controller.dart';
 import 'package:woolet/features/data/datasources/account_local_data_source.dart';
 import 'package:woolet/features/data/datasources/account_local_data_source_impl.dart';
+import 'package:woolet/features/data/datasources/auth_remote_data_source.dart';
+import 'package:woolet/features/data/datasources/auth_remote_data_source_impl.dart';
 import 'package:woolet/features/data/datasources/budget_local_data_source.dart';
 import 'package:woolet/features/data/datasources/budget_local_data_source_impl.dart';
 import 'package:woolet/features/data/datasources/category_local_data_source.dart';
@@ -12,6 +15,7 @@ import 'package:woolet/features/data/datasources/category_local_data_source_impl
 import 'package:woolet/features/data/datasources/transaction_local_data_source.dart';
 import 'package:woolet/features/data/datasources/transaction_local_data_source_impl.dart';
 import 'package:woolet/features/data/repositories/account_repository_impl.dart';
+import 'package:woolet/features/data/repositories/auth_repository_impl.dart';
 import 'package:woolet/features/data/repositories/analytics_repository_impl.dart';
 import 'package:woolet/features/data/repositories/budget_repository_impl.dart';
 import 'package:woolet/features/data/repositories/category_repository_impl.dart';
@@ -19,16 +23,19 @@ import 'package:woolet/features/data/repositories/transaction_repository_impl.da
 import 'package:woolet/features/domain/constants/default_accounts.dart';
 import 'package:woolet/features/domain/constants/default_categories.dart';
 import 'package:woolet/features/domain/repositories/account_repository.dart';
+import 'package:woolet/features/domain/repositories/auth_repository.dart';
 import 'package:woolet/features/domain/repositories/analytics_repository.dart';
 import 'package:woolet/features/domain/repositories/budget_repository.dart';
 import 'package:woolet/features/domain/repositories/category_repository.dart';
 import 'package:woolet/features/domain/repositories/transaction_repository.dart';
 import 'package:woolet/features/domain/usecases/account/account_usecases.dart';
+import 'package:woolet/features/domain/usecases/auth/auth_usecases.dart';
 import 'package:woolet/features/domain/usecases/analytics/analytics_usecases.dart';
 import 'package:woolet/features/domain/usecases/budget/budget_usecases.dart';
 import 'package:woolet/features/domain/usecases/category/category_usecases.dart';
 import 'package:woolet/features/domain/usecases/transaction/transaction_usecases.dart';
 import 'package:woolet/features/presentation/blocs/account/account_bloc.dart';
+import 'package:woolet/features/presentation/blocs/auth/auth_bloc.dart';
 import 'package:woolet/features/presentation/blocs/analytics/analytics_bloc.dart';
 import 'package:woolet/features/presentation/blocs/budget/budget_bloc.dart';
 import 'package:woolet/features/presentation/blocs/category/category_bloc.dart';
@@ -43,6 +50,8 @@ Future<void> initDependencies() async {
   final currencyController = await CurrencyController.create(preferences);
   sl.registerSingleton<CurrencyController>(currencyController);
 
+  _initAuthFeature();
+
   sl.registerLazySingleton<AppDatabase>(
     AppDatabase.new,
     dispose: (database) => database.close(),
@@ -53,6 +62,21 @@ Future<void> initDependencies() async {
   _initTransactionFeature();
   _initBudgetFeature();
   _initAnalyticsFeature();
+}
+
+void _initAuthFeature() {
+  sl.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
+  sl.registerLazySingleton<AuthRemoteDataSource>(
+    () => AuthRemoteDataSourceImpl(sl()),
+  );
+  sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl()));
+  sl.registerLazySingleton(() => SignIn(sl()));
+  sl.registerLazySingleton(() => IsSignedIn(sl()));
+  sl.registerLazySingleton(() => Register(sl()));
+  sl.registerLazySingleton(() => SendPasswordResetEmail(sl()));
+  sl.registerFactory(
+    () => AuthBloc(signIn: sl(), register: sl(), sendPasswordResetEmail: sl()),
+  );
 }
 
 void _initAnalyticsFeature() {

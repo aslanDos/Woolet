@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:woolet/core/constants/app_constants.dart';
+import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/core/router/routes.dart';
+import 'package:woolet/core/usecases/usecase.dart';
+import 'package:woolet/features/domain/usecases/auth/is_signed_in.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -39,11 +44,30 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
 
-    _animationController.forward().then((_) {
-      if (mounted) {
-        context.go(AppRoutes.onboarding);
-      }
-    });
+    _animationController.forward().then((_) => _openInitialRoute());
+  }
+
+  Future<void> _openInitialRoute() async {
+    // always show onboarding
+    if (mounted) {
+      context.go(AppRoutes.onboarding);
+      return;
+    }
+
+    final authResult = await sl<IsSignedIn>()(const NoParams());
+    final isSignedIn = authResult.getOrElse(() => false);
+    final onboardingCompleted =
+        sl<SharedPreferences>().getBool(AppConstants.onboardingCompletedKey) ??
+        false;
+
+    if (!mounted) return;
+    if (isSignedIn) {
+      context.go(AppRoutes.main);
+    } else if (onboardingCompleted) {
+      context.go(AppRoutes.login);
+    } else {
+      context.go(AppRoutes.onboarding);
+    }
   }
 
   @override
