@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/core/widgets/pressable.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
 
@@ -33,8 +34,10 @@ class AccountSelector extends StatelessWidget {
         : AppIcon.fromCode(selectedAccount.iconCode).icon;
 
     final String text = allAccounts
-        ? 'All accounts'
-        : selectedAccount?.name ?? 'Select Account';
+        ? context.l10n.allAccounts
+        : selectedAccount == null
+        ? context.l10n.selectAccount
+        : context.localizedAccountName(selectedAccount.name);
     final Color textColor = context.c.onSurface;
 
     return Pressable(

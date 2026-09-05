@@ -4,6 +4,7 @@ import 'package:pie_menu/pie_menu.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/settings/app_settings_controller.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
 import 'package:woolet/features/presentation/screens/budgets_screen.dart';
 import 'package:woolet/features/presentation/screens/home_screen.dart';
@@ -21,12 +22,13 @@ class MainTabView extends StatefulWidget {
 class _MainTabViewState extends State<MainTabView>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
-  int _currentIndex = 0;
+  late int _currentIndex;
   AccountEntity? _homeAccount;
 
   @override
   void initState() {
     super.initState();
+    _currentIndex = sl<AppSettingsController>().value.startTab.index;
     _tabController = TabController(
       length: 2,
       initialIndex: _currentIndex,

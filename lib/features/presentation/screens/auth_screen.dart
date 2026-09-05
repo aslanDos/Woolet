@@ -4,6 +4,7 @@ import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:go_router/go_router.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/core/router/routes.dart';
 import 'package:woolet/core/widgets/error_toast.dart';
 import 'package:woolet/features/presentation/blocs/auth/auth_bloc.dart';
@@ -124,7 +125,7 @@ class _AuthScreenState extends State<_AuthScreen>
             context.go(AppRoutes.main);
           case AuthStatus.passwordResetSent:
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Password reset email sent')),
+              SnackBar(content: Text(context.l10n.passwordResetSent)),
             );
           case AuthStatus.failure:
             _errorToast.show(
@@ -157,7 +158,7 @@ class _AuthScreenState extends State<_AuthScreen>
                           SizedBox(height: 30),
                           AuthField(
                             controller: _emailController,
-                            label: 'Email',
+                            label: context.l10n.email,
                             hint: 'you@example.com',
                             icon: LucideIcons.mail,
                             keyboardType: TextInputType.emailAddress,
@@ -167,7 +168,7 @@ class _AuthScreenState extends State<_AuthScreen>
                           const SizedBox(height: 14),
                           AuthField(
                             controller: _passwordController,
-                            label: 'Password',
+                            label: context.l10n.password,
                             hint: isRegister
                                 ? 'At least 8 characters'
                                 : 'Your password',
@@ -201,7 +202,7 @@ class _AuthScreenState extends State<_AuthScreen>
                             const SizedBox(height: 14),
                             AuthField(
                               controller: _confirmPasswordController,
-                              label: 'Confirm password',
+                              label: context.l10n.confirmPassword,
                               hint: 'Repeat your password',
                               icon: LucideIcons.lock_keyhole,
                               obscureText: _obscurePassword,
@@ -220,13 +221,15 @@ class _AuthScreenState extends State<_AuthScreen>
                               alignment: Alignment.centerRight,
                               child: TextButton(
                                 onPressed: isLoading ? null : _resetPassword,
-                                child: const Text('Forgot password?'),
+                                child: Text(context.l10n.forgotPassword),
                               ),
                             ),
                           ),
                           const Spacer(),
                           Button(
-                            label: isRegister ? 'Create account' : 'Sign in',
+                            label: isRegister
+                                ? context.l10n.createAccountAuth
+                                : context.l10n.signIn,
                             icon: isRegister
                                 ? LucideIcons.user_round_plus
                                 : LucideIcons.arrow_right,

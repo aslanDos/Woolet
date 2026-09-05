@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 
 class IconPicker extends StatelessWidget {
   const IconPicker({
@@ -116,7 +117,7 @@ class IconPickerField extends StatelessWidget {
             GestureDetector(
               onTap: onSeeAll,
               child: Text(
-                'See All',
+                context.l10n.seeAll,
                 style: context.t.titleSmall?.copyWith(
                   decoration: TextDecoration.underline,
                 ),

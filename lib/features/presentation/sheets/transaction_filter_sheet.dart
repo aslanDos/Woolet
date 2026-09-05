@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:woolet/core/constants/app_enums.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/core/extensions/transaction_type_x.dart';
 import 'package:woolet/features/presentation/widgets/button.dart';
 import 'package:woolet/features/presentation/widgets/custom_bottom_sheet.dart';
@@ -63,7 +64,7 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
   Widget build(BuildContext context) {
     return CustomBottomSheet(
       // height: 430,
-      title: const Text('Filter transactions'),
+      title: Text(context.l10n.filterTransactions),
       leading: IconButton.filled(
         onPressed: () => Navigator.pop(context),
         icon: const Icon(LucideIcons.x),
@@ -72,7 +73,7 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
         children: [
           Expanded(
             child: Button(
-              label: 'Reset',
+              label: context.l10n.reset,
               backgroundColor: context.c.surfaceContainerHigh,
               foregroundColor: context.c.onSurface,
               onPressed: _reset,
@@ -81,7 +82,7 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
           const SizedBox(width: 12),
           Expanded(
             child: Button(
-              label: 'Save',
+              label: context.l10n.save,
               onPressed: _selectedTypes.isEmpty ? null : _save,
             ),
           ),
@@ -90,7 +91,7 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Transaction type', style: context.t.titleLarge),
+          Text(context.l10n.transactionType, style: context.t.titleLarge),
           const SizedBox(height: 12),
           Row(
             children: [
@@ -105,7 +106,7 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
             ],
           ),
           const SizedBox(height: 24),
-          Text('Sort by', style: context.t.titleLarge),
+          Text(context.l10n.sortBy, style: context.t.titleLarge),
           const SizedBox(height: 12),
           GridView.count(
             shrinkWrap: true,
@@ -186,7 +187,10 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
                 ),
                 const SizedBox(width: 6),
                 Flexible(
-                  child: Text(type.label, overflow: TextOverflow.ellipsis),
+                  child: Text(
+                    type.localizedLabel(context),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
+import 'package:woolet/core/widgets/app_empty_state.dart';
 import 'package:woolet/core/models/currency_info.dart';
 import 'package:woolet/features/presentation/widgets/custom_bottom_sheet.dart';
 
@@ -42,7 +44,7 @@ class _CurrencyPickerSheetState extends State<CurrencyPickerSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Select Currency', style: context.t.headlineMedium),
+          Text(context.l10n.selectCurrency, style: context.t.headlineMedium),
           const SizedBox(height: 16),
           TextField(
             autofocus: false,
@@ -54,7 +56,7 @@ class _CurrencyPickerSheetState extends State<CurrencyPickerSheet> {
               hintStyle: context.t.titleMedium?.copyWith(
                 color: context.c.onSurfaceVariant,
               ),
-              hintText: 'Search',
+              hintText: context.l10n.search,
               prefixIcon: const Icon(LucideIcons.search, size: 16),
               filled: true,
               fillColor: context.c.surfaceContainer,
@@ -74,16 +76,10 @@ class _CurrencyPickerSheetState extends State<CurrencyPickerSheet> {
           ),
           const SizedBox(height: 12),
           if (currencies.isEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 32),
-              child: Center(
-                child: Text(
-                  'No currencies found',
-                  style: context.t.bodyMedium?.copyWith(
-                    color: context.c.onSurfaceVariant,
-                  ),
-                ),
-              ),
+            AppEmptyState(
+              icon: LucideIcons.search_x,
+              title: context.l10n.noCurrenciesFound,
+              compact: true,
             )
           else
             ...currencies.map(

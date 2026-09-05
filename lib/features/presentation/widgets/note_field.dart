@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/features/presentation/widgets/form_tile.dart';
@@ -12,14 +13,14 @@ class NoteField extends StatelessWidget {
   Widget build(BuildContext context) {
     return FormTile(
       icon: LucideIcons.notebook_pen,
-      label: 'Note',
+      label: context.l10n.note,
       field: TextField(
         controller: controller,
         autocorrect: false,
         style: context.t.bodyMedium,
         textAlign: TextAlign.end,
-        decoration: const InputDecoration(
-          hintText: 'Add a note',
+        decoration: InputDecoration(
+          hintText: context.l10n.addNote,
           isCollapsed: true,
           filled: false,
           contentPadding: EdgeInsets.zero,

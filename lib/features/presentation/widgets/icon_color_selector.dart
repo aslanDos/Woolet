@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/core/theme/app_colors.dart';
 import 'package:woolet/features/presentation/sheets/icon_picker_sheet.dart';
 import 'package:woolet/features/presentation/widgets/color_picker.dart';
@@ -43,7 +44,7 @@ class IconColorSelector extends StatelessWidget {
         ),
         SizedBox(height: compact ? 4 : 24),
         if (!compact) ...[
-          Text('Color', style: context.t.titleLarge),
+          Text(context.l10n.color, style: context.t.titleLarge),
           const SizedBox(height: 10),
         ],
         ColorPicker(

@@ -4,8 +4,10 @@ import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/core/settings/currency_controller.dart';
 import 'package:woolet/core/widgets/pressable.dart';
+import 'package:woolet/core/widgets/app_empty_state.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
 import 'package:woolet/features/presentation/blocs/account/account_bloc.dart';
 import 'package:woolet/features/presentation/sheets/account_form_sheet.dart';
@@ -32,7 +34,7 @@ class AccountsSheet extends StatelessWidget {
       create: (_) => sl<AccountBloc>()..add(const AccountLoadRequested()),
       child: Builder(
         builder: (context) => CustomBottomSheet(
-          title: const Text('Accounts'),
+          title: Text(context.l10n.allAccounts),
           actions: [
             IconButton.filled(
               onPressed:
@@ -56,7 +58,11 @@ class AccountsSheet extends StatelessWidget {
                   .where((account) => account.visible)
                   .toList(growable: false);
 
-              if (accounts.isEmpty) return const _EmptyAccounts();
+              if (accounts.isEmpty) {
+                return _EmptyAccounts(
+                  onAction: () => _openAccountForm(context: context),
+                );
+              }
 
               return Column(
                 mainAxisSize: MainAxisSize.min,
@@ -130,7 +136,12 @@ class _AllAccountsCard extends StatelessWidget {
           children: [
             Icon(LucideIcons.check_check, color: context.c.primary, size: 16),
             const SizedBox(width: 12),
-            Expanded(child: Text('All accounts', style: context.t.titleMedium)),
+            Expanded(
+              child: Text(
+                context.l10n.allAccounts,
+                style: context.t.titleMedium,
+              ),
+            ),
           ],
         ),
       ),
@@ -151,12 +162,12 @@ class _LoadError extends StatelessWidget {
         children: [
           Icon(LucideIcons.circle_alert, color: context.c.error),
           const SizedBox(height: 8),
-          Text(message ?? 'Could not load accounts'),
+          Text(message ?? context.l10n.couldNotLoadAccounts),
           const SizedBox(height: 12),
           TextButton(
             onPressed: () =>
                 context.read<AccountBloc>().add(const AccountLoadRequested()),
-            child: const Text('Try again'),
+            child: Text(context.l10n.tryAgain),
           ),
         ],
       ),
@@ -165,19 +176,18 @@ class _LoadError extends StatelessWidget {
 }
 
 class _EmptyAccounts extends StatelessWidget {
-  const _EmptyAccounts();
+  const _EmptyAccounts({required this.onAction});
+
+  final VoidCallback onAction;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(LucideIcons.wallet, size: 32, color: context.c.onSurfaceVariant),
-          const SizedBox(height: 8),
-          Text('No accounts yet', style: context.t.bodyMedium),
-        ],
-      ),
+    return AppEmptyState(
+      icon: LucideIcons.wallet,
+      title: context.l10n.noAccountsYet,
+      actionLabel: context.l10n.createAccount,
+      onAction: onAction,
+      compact: true,
     );
   }
 }

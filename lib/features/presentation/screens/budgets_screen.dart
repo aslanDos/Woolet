@@ -5,9 +5,11 @@ import 'package:woolet/core/constants/app_enums.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/core/settings/currency_controller.dart';
 import 'package:woolet/core/utils/uuid.dart';
 import 'package:woolet/core/utils/date_utils.dart';
+import 'package:woolet/core/widgets/app_empty_state.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
 import 'package:woolet/features/domain/entities/budget_entity.dart';
 import 'package:woolet/features/domain/entities/category_entity.dart';
@@ -136,7 +138,7 @@ class _BudgetsViewState extends State<_BudgetsView> {
     ),
     child: Scaffold(
       appBar: AppBar(
-        title: Text('Budgets', style: context.t.headlineLarge),
+        title: Text(context.l10n.budgets, style: context.t.headlineLarge),
         actionsPadding: const EdgeInsets.only(right: 16),
         actions: [
           IconButton(
@@ -163,20 +165,25 @@ class _BudgetsViewState extends State<_BudgetsView> {
             }
             if (state.status == BudgetStatus.failure && state.items.isEmpty) {
               return Center(
-                child: Text(state.errorMessage ?? 'Could not load budgets'),
+                child: Text(
+                  state.errorMessage ?? context.l10n.couldNotLoadBudgets,
+                ),
               );
             }
             if (state.items.isEmpty) {
-              return const Center(child: Text('No budgets yet'));
+              return AppEmptyState(
+                icon: LucideIcons.piggy_bank,
+                title: context.l10n.noBudgetsYet,
+                actionLabel: context.l10n.addBudget,
+                onAction: _openForm,
+              );
             }
             if (items.isEmpty) {
-              return Center(
-                child: Text(
-                  'No budgets for selected periods',
-                  style: context.t.bodyMedium?.copyWith(
-                    color: context.c.outline,
-                  ),
-                ),
+              return AppEmptyState(
+                icon: LucideIcons.list_filter,
+                title: context.l10n.noBudgetsForFilters,
+                actionLabel: context.l10n.reset,
+                onAction: () => setState(() => _filter = const BudgetFilter()),
               );
             }
             return _BudgetList(

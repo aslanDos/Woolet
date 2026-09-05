@@ -7,6 +7,7 @@ import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/budget_period_x.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/core/theme/app_colors.dart';
 import 'package:woolet/core/utils/amount_formatter.dart';
 import 'package:woolet/core/utils/amount_utils.dart';
@@ -166,7 +167,7 @@ class _BudgetFormSheetState extends State<BudgetFormSheet>
         color: context.c.surface,
         child: Padding(
           padding: const EdgeInsets.only(top: 10),
-          child: Button(label: 'Save', onPressed: _submit),
+          child: Button(label: context.l10n.save, onPressed: _submit),
         ),
       ),
       child: SizedBox(
@@ -184,7 +185,7 @@ class _BudgetFormSheetState extends State<BudgetFormSheet>
             const SizedBox(height: 4),
             FormTile(
               icon: LucideIcons.badge_dollar_sign,
-              label: 'Limit',
+              label: context.l10n.limit,
               field: TextField(
                 controller: _limitController,
                 keyboardType: const TextInputType.numberWithOptions(
@@ -213,14 +214,14 @@ class _BudgetFormSheetState extends State<BudgetFormSheet>
             const SizedBox(height: 4),
             FormTile(
               icon: LucideIcons.text_cursor_input,
-              label: 'Name',
+              label: context.l10n.name,
               field: TextField(
                 controller: _nameController,
                 maxLength: BudgetEntity.maxNameLength,
                 style: context.t.bodyMedium,
                 textAlign: TextAlign.end,
-                decoration: const InputDecoration(
-                  hintText: 'Budget name',
+                decoration: InputDecoration(
+                  hintText: context.l10n.budgetName,
                   counterText: '',
                   isCollapsed: true,
                   filled: false,
@@ -307,10 +308,12 @@ class _BudgetCategorySelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = allSelected ? 'All Categories' : '${selected.length}';
+    final label = allSelected
+        ? context.l10n.allCategories
+        : '${selected.length}';
     return FormTile(
       icon: LucideIcons.tags,
-      label: 'Categories',
+      label: context.l10n.categories,
       onTap: onTap,
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -359,7 +362,7 @@ class _BudgetPeriodSelector extends StatelessWidget {
     final menuItems = BudgetPeriod.values
         .map(
           (period) => AdaptivePopupMenuItem<BudgetPeriod>(
-            label: period.label,
+            label: period.localizedLabel(context),
             value: period,
           ),
         )
@@ -383,12 +386,12 @@ class _BudgetPeriodSelector extends StatelessWidget {
           children: [
             FormTile(
               icon: LucideIcons.calendar_range,
-              label: 'Period',
+              label: context.l10n.period,
               background: false,
               trailing: _AdaptiveMenuTrigger<BudgetPeriod>(
                 items: menuItems,
                 onSelected: onChanged,
-                label: selected.label,
+                label: selected.localizedLabel(context),
               ),
             ),
             AnimatedSwitcher(
@@ -406,7 +409,7 @@ class _BudgetPeriodSelector extends StatelessWidget {
                         ),
                         FormTile(
                           icon: LucideIcons.calendar_clock,
-                          label: 'Starts on',
+                          label: context.l10n.startsOn,
                           background: false,
                           trailing: _AdaptiveMenuTrigger<int>(
                             items: dayItems,

@@ -6,6 +6,7 @@ import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/category_type_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/core/utils/uuid.dart';
 import 'package:woolet/core/widgets/alert_dialog.dart';
 import 'package:woolet/core/widgets/error_toast.dart';
@@ -99,7 +100,9 @@ class _CategoryFormViewState extends State<_CategoryFormView>
       },
       builder: (context, state) {
         return CustomBottomSheet(
-          title: Text(_isEditing ? 'Edit category' : 'New category'),
+          title: Text(
+            _isEditing ? context.l10n.editCategory : context.l10n.newCategory,
+          ),
           leading: IconButton.filled(
             onPressed: state.isProcessing ? null : () => Navigator.pop(context),
             icon: const Icon(LucideIcons.x),
@@ -120,7 +123,9 @@ class _CategoryFormViewState extends State<_CategoryFormView>
             child: Padding(
               padding: const EdgeInsets.only(top: 10),
               child: Button(
-                label: _isEditing ? 'Save changes' : 'Create category',
+                label: _isEditing
+                    ? context.l10n.saveChanges
+                    : context.l10n.createCategory,
                 isLoading: state.isProcessing,
                 onPressed: _submit,
               ),
@@ -134,7 +139,7 @@ class _CategoryFormViewState extends State<_CategoryFormView>
                     .map(
                       (type) => TypeToggleItem(
                         value: type,
-                        label: type.label,
+                        label: type.localizedLabel(context),
                         icon: type.icon,
                         selectedBackgroundColor: type.backgroundColor,
                       ),
@@ -157,7 +162,7 @@ class _CategoryFormViewState extends State<_CategoryFormView>
               const SizedBox(height: 4),
               FormTile(
                 icon: LucideIcons.a_large_small,
-                label: 'Name',
+                label: context.l10n.name,
                 field: TextFormField(
                   controller: _nameController,
                   autofocus: !_isEditing,
@@ -165,8 +170,8 @@ class _CategoryFormViewState extends State<_CategoryFormView>
                   textCapitalization: TextCapitalization.sentences,
                   style: context.t.bodyMedium,
                   textAlign: TextAlign.end,
-                  decoration: const InputDecoration(
-                    hintText: 'Category name',
+                  decoration: InputDecoration(
+                    hintText: context.l10n.categoryName,
                     counterText: '',
                     isCollapsed: true,
                     filled: false,
@@ -225,7 +230,7 @@ class _CategoryFormViewState extends State<_CategoryFormView>
 
     final confirmed = await AppAlertDialog.show(
       context,
-      title: 'Delete category?',
+      title: context.l10n.deleteCategoryQuestion,
       message: 'Are you sure you want to delete “${category.name}”?',
       confirmLabel: 'Delete',
       isDestructive: true,

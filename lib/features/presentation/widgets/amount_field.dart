@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/core/settings/currency_controller.dart';
 import 'package:woolet/core/utils/amount_formatter.dart';
 import 'package:woolet/core/utils/amount_utils.dart';
@@ -71,7 +72,7 @@ class _AmountFieldState extends State<AmountField>
         widget.currencySymbol ?? sl<CurrencyController>().value.symbol;
 
     return Semantics(
-      label: 'Amount',
+      label: context.l10n.amount,
       textField: true,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,

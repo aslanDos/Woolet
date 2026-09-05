@@ -1,17 +1,24 @@
+import 'package:flutter/widgets.dart';
+import 'package:intl/intl.dart';
 import 'package:woolet/core/constants/app_enums.dart';
 
 abstract final class AppDateUtils {
-  static const _weekdays = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday',
+  static const _kazakhShortWeekdays = [
+    'дүй',
+    'сей',
+    'сәр',
+    'бей',
+    'жұм',
+    'сен',
+    'жек',
   ];
 
-  static String weekdayName(DateTime value) => _weekdays[value.weekday - 1];
+  static String weekdayName(DateTime value, Locale locale) {
+    if (locale.languageCode == 'kk') {
+      return _kazakhShortWeekdays[value.weekday - 1];
+    }
+    return DateFormat.EEEE(locale.toLanguageTag()).format(value);
+  }
 
   static DateTime shiftBudgetPeriod(
     DateTime value,

@@ -3,6 +3,7 @@ import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:pie_menu/pie_menu.dart';
 import 'package:woolet/core/constants/app_enums.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/core/extensions/transaction_type_x.dart';
 
 class Navbar extends StatelessWidget {
@@ -16,11 +17,6 @@ class Navbar extends StatelessWidget {
   final int activeIndex;
   final ValueChanged<int> onTap;
   final ValueChanged<TransactionType> onAddTap;
-
-  static const _items = <({IconData icon, String label})>[
-    (icon: LucideIcons.receipt_text, label: 'Transactions'),
-    (icon: LucideIcons.piggy_bank, label: 'Budgets'),
-  ];
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +45,21 @@ class Navbar extends StatelessWidget {
                     ),
                     boxShadow: _floatingShadow(context, isDark),
                   ),
-                  child: Row(children: List.generate(_items.length, _item)),
+                  child: Row(
+                    children:
+                        [
+                              (
+                                LucideIcons.receipt_text,
+                                context.l10n.transactions,
+                              ),
+                              (LucideIcons.piggy_bank, context.l10n.budgets),
+                            ].indexed
+                            .map(
+                              (entry) =>
+                                  _item(entry.$1, entry.$2.$1, entry.$2.$2),
+                            )
+                            .toList(),
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
@@ -61,15 +71,13 @@ class Navbar extends StatelessWidget {
     );
   }
 
-  Widget _item(int index) {
-    final item = _items[index];
-
+  Widget _item(int index, IconData icon, String label) {
     return Expanded(
       child: _NavbarButton(
         index: index,
         isActive: index == activeIndex,
-        icon: item.icon,
-        label: item.label,
+        icon: icon,
+        label: label,
         onTap: onTap,
       ),
     );
@@ -162,7 +170,7 @@ class _AddButton extends StatelessWidget {
       actions: TransactionType.values
           .map(
             (type) => PieAction(
-              tooltip: Text(type.label),
+              tooltip: Text(type.localizedLabel(context)),
               onSelect: () => onTap(type),
               buttonThemeHovered: PieButtonTheme(
                 backgroundColor: type.backgroundColor,

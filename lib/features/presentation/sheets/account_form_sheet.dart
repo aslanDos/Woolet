@@ -4,6 +4,7 @@ import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/core/settings/currency_controller.dart';
 import 'package:woolet/core/utils/amount_formatter.dart';
 import 'package:woolet/core/utils/amount_utils.dart';
@@ -103,7 +104,9 @@ class _AccountFormViewState extends State<_AccountFormView>
       },
       builder: (context, state) {
         return CustomBottomSheet(
-          title: Text(_isEditing ? 'Edit account' : 'New account'),
+          title: Text(
+            _isEditing ? context.l10n.editAccount : context.l10n.newAccount,
+          ),
           leading: IconButton.filled(
             onPressed: state.isProcessing ? null : () => Navigator.pop(context),
             icon: const Icon(LucideIcons.x),
@@ -124,7 +127,9 @@ class _AccountFormViewState extends State<_AccountFormView>
             child: Padding(
               padding: const EdgeInsets.only(top: 10),
               child: Button(
-                label: _isEditing ? 'Save changes' : 'Create account',
+                label: _isEditing
+                    ? context.l10n.saveChanges
+                    : context.l10n.createAccount,
                 isLoading: state.isProcessing,
                 onPressed: _submit,
               ),
@@ -143,7 +148,7 @@ class _AccountFormViewState extends State<_AccountFormView>
               const SizedBox(height: 4),
               FormTile(
                 icon: LucideIcons.a_large_small,
-                label: 'Name',
+                label: context.l10n.name,
                 field: TextFormField(
                   controller: _nameController,
                   autofocus: !_isEditing,
@@ -152,7 +157,7 @@ class _AccountFormViewState extends State<_AccountFormView>
                   style: context.t.bodyMedium,
                   textAlign: TextAlign.end,
                   decoration: _inlineFieldDecoration(
-                    hintText: 'Account name',
+                    hintText: context.l10n.accountName,
                     hideCounter: true,
                   ),
                   onChanged: (_) => _errorToast.hide(),
@@ -163,7 +168,7 @@ class _AccountFormViewState extends State<_AccountFormView>
               const SizedBox(height: 4),
               FormTile(
                 icon: LucideIcons.badge_dollar_sign,
-                label: 'Balance',
+                label: context.l10n.balance,
                 field: TextFormField(
                   controller: _balanceController,
                   keyboardType: const TextInputType.numberWithOptions(
@@ -244,7 +249,7 @@ class _AccountFormViewState extends State<_AccountFormView>
 
     final confirmed = await AppAlertDialog.show(
       context,
-      title: 'Delete account?',
+      title: context.l10n.deleteAccountQuestion,
       message: 'Are you sure you want to delete “${account.name}”?',
       confirmLabel: 'Delete',
       isDestructive: true,

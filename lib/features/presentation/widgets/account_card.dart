@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/core/utils/amount_utils.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
 import 'package:woolet/features/presentation/widgets/base_card.dart';
@@ -30,10 +31,10 @@ class AccountCard extends StatelessWidget {
 
     return BaseCard(
       onTap: onTap,
-      semanticLabel: account.name,
+      semanticLabel: context.localizedAccountName(account.name),
       leading: IconPreview.card(icon: icon, color: accentColor),
       title: Text(
-        account.name,
+        context.localizedAccountName(account.name),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: context.t.titleMedium,

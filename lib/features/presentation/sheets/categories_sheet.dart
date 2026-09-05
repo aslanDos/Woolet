@@ -6,6 +6,8 @@ import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/category_type_x.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
+import 'package:woolet/core/widgets/app_empty_state.dart';
 import 'package:woolet/features/domain/entities/category_entity.dart';
 import 'package:woolet/features/presentation/blocs/category/category_bloc.dart';
 import 'package:woolet/features/presentation/sheets/category_form_sheet.dart';
@@ -108,10 +110,10 @@ class _CategoriesSheetViewState extends State<_CategoriesSheetView> {
                 icon: const Icon(LucideIcons.plus),
               ),
             ],
-      title: const Text('Categories'),
+      title: Text(context.l10n.categories),
       footer: widget.multiSelect
           ? Button(
-              label: 'Save',
+              label: context.l10n.save,
               onPressed: _selectedCategoryUuids.isEmpty ? null : _save,
             )
           : null,
@@ -132,7 +134,7 @@ class _CategoriesSheetViewState extends State<_CategoriesSheetView> {
                         .map(
                           (type) => TypeToggleItem(
                             value: type,
-                            label: type.label,
+                            label: type.localizedLabel(context),
                             icon: type.icon,
                             selectedBackgroundColor: type.backgroundColor,
                           ),
@@ -155,7 +157,7 @@ class _CategoriesSheetViewState extends State<_CategoriesSheetView> {
                     state.categories.isEmpty)
                   _CategoryLoadError(message: state.errorMessage)
                 else if (categories.isEmpty)
-                  const _EmptyCategories()
+                  _EmptyCategories(onAction: _openCategoryForm)
                 else ...[
                   if (widget.showAllCategoriesButton)
                     Padding(
@@ -259,7 +261,10 @@ class _AllCategoriesCard extends StatelessWidget {
               Icon(LucideIcons.tags, color: context.c.primary, size: 22),
               const SizedBox(width: 12),
               Expanded(
-                child: Text('All Categories', style: context.t.titleMedium),
+                child: Text(
+                  context.l10n.allCategories,
+                  style: context.t.titleMedium,
+                ),
               ),
               Icon(
                 selected ? LucideIcons.check : LucideIcons.plus,
@@ -290,7 +295,7 @@ class _CategoryLoadError extends StatelessWidget {
           Icon(LucideIcons.circle_alert, color: context.c.error),
           const SizedBox(height: 8),
           Text(
-            message ?? 'Could not load categories',
+            message ?? context.l10n.couldNotLoadCategories,
             textAlign: TextAlign.center,
             style: context.t.bodyMedium?.copyWith(color: context.c.error),
           ),
@@ -298,7 +303,7 @@ class _CategoryLoadError extends StatelessWidget {
           TextButton(
             onPressed: () =>
                 context.read<CategoryBloc>().add(const CategoryLoadRequested()),
-            child: const Text('Try again'),
+            child: Text(context.l10n.tryAgain),
           ),
         ],
       ),
@@ -307,24 +312,18 @@ class _CategoryLoadError extends StatelessWidget {
 }
 
 class _EmptyCategories extends StatelessWidget {
-  const _EmptyCategories();
+  const _EmptyCategories({required this.onAction});
+
+  final VoidCallback onAction;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 48),
-      child: Column(
-        children: [
-          Icon(LucideIcons.tags, size: 32, color: context.c.onSurfaceVariant),
-          const SizedBox(height: 8),
-          Text(
-            'No categories yet',
-            style: context.t.bodyMedium?.copyWith(
-              color: context.c.onSurfaceVariant,
-            ),
-          ),
-        ],
-      ),
+    return AppEmptyState(
+      icon: LucideIcons.tags,
+      title: context.l10n.noCategoriesYet,
+      actionLabel: context.l10n.createCategory,
+      onAction: onAction,
+      compact: true,
     );
   }
 }

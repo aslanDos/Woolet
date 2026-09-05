@@ -5,6 +5,7 @@ import 'package:woolet/core/constants/app_enums.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/core/extensions/transaction_type_x.dart';
 import 'package:woolet/core/settings/currency_controller.dart';
 import 'package:woolet/core/utils/amount_utils.dart';
@@ -163,7 +164,7 @@ class _TransactionFormSheetState extends State<TransactionFormSheet>
       builder: (context, state) => CustomBottomSheet(
         // height: MediaQuery.sizeOf(context).height * 0.9,
         footer: Button(
-          label: 'Save',
+          label: context.l10n.save,
           isLoading: state.isProcessing,
           onPressed: _submit,
         ),
@@ -192,12 +193,12 @@ class _TransactionFormSheetState extends State<TransactionFormSheet>
             mainAxisSize: MainAxisSize.min,
             children: [
               TypeToggle<TransactionType>(
-                showLabels: false,
+                // showLabels: false,
                 items: TransactionType.values
                     .map(
                       (type) => TypeToggleItem(
                         value: type,
-                        label: type.label,
+                        label: type.localizedLabel(context),
                         icon: type.icon,
                         selectedBackgroundColor: type.backgroundColor,
                       ),
@@ -304,7 +305,7 @@ class _TransactionFormSheetState extends State<TransactionFormSheet>
   Future<void> _delete() async {
     final confirmed = await AppAlertDialog.show(
       context,
-      title: 'Delete transaction?',
+      title: context.l10n.deleteTransactionQuestion,
       message:
           'This transaction will be permanently deleted and the account balance will be adjusted.',
       confirmLabel: 'Delete',

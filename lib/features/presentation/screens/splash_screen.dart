@@ -49,10 +49,10 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _openInitialRoute() async {
     // always show onboarding
-    if (mounted) {
-      context.go(AppRoutes.onboarding);
-      return;
-    }
+    // if (mounted) {
+    //   context.go(AppRoutes.onboarding);
+    //   return;
+    // }
 
     final authResult = await sl<IsSignedIn>()(const NoParams());
     final isSignedIn = authResult.getOrElse(() => false);

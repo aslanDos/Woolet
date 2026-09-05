@@ -3,6 +3,7 @@ import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/extensions/category_type_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/features/domain/entities/category_entity.dart';
 import 'package:woolet/features/presentation/widgets/base_card.dart';
 import 'package:woolet/features/presentation/widgets/icon_preview.dart';
@@ -30,10 +31,10 @@ class CategoryCard extends StatelessWidget {
 
     return BaseCard(
       onTap: onTap,
-      semanticLabel: category.name,
+      semanticLabel: context.localizedCategoryName(category.name),
       leading: IconPreview.card(icon: appIcon.icon, color: accentColor),
       title: Text(
-        category.name,
+        context.localizedCategoryName(category.name),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: context.t.titleMedium,

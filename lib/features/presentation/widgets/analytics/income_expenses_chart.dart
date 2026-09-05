@@ -2,10 +2,14 @@ import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/core/settings/currency_controller.dart';
+import 'package:woolet/core/settings/app_settings_controller.dart';
 import 'package:woolet/core/utils/amount_utils.dart';
+import 'package:woolet/core/widgets/app_empty_state.dart';
 import 'package:woolet/features/domain/entities/analytics_entity.dart';
 import 'package:woolet/features/presentation/sheets/periods_sheet.dart';
 
@@ -48,11 +52,20 @@ class _IncomeExpensesChartState extends State<IncomeExpensesChart> {
           Row(
             children: [
               Expanded(
-                child: Text('Income and expenses', style: context.t.titleLarge),
+                child: Text(
+                  context.l10n.incomeAndExpenses,
+                  style: context.t.titleLarge,
+                ),
               ),
-              _Legend(color: context.appColors.income, label: 'Income'),
+              _Legend(
+                color: context.appColors.income,
+                label: context.l10n.income,
+              ),
               const SizedBox(width: 12),
-              _Legend(color: context.appColors.expense, label: 'Expenses'),
+              _Legend(
+                color: context.appColors.expense,
+                label: context.l10n.expenses,
+              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -272,8 +285,8 @@ class _IncomeExpensesChartState extends State<IncomeExpensesChart> {
       PeriodType.week => _dailyGroups(
         income,
         expenses,
-        widget.period.anchor.subtract(
-          Duration(days: widget.period.anchor.weekday - 1),
+        sl<AppSettingsController>().value.weekStart.startOfWeek(
+          widget.period.anchor,
         ),
         7,
       ),
@@ -299,7 +312,9 @@ class _IncomeExpensesChartState extends State<IncomeExpensesChart> {
     List<AnalyticsPoint> expenses,
   ) {
     final today = _dateOnly(DateTime.now());
-    final thisWeek = today.subtract(Duration(days: today.weekday - 1));
+    final thisWeek = sl<AppSettingsController>().value.weekStart.startOfWeek(
+      today,
+    );
     return _dailyGroups(
       income,
       expenses,
@@ -517,10 +532,9 @@ class _EmptyChart extends StatelessWidget {
   const _EmptyChart();
 
   @override
-  Widget build(BuildContext context) => Center(
-    child: Text(
-      'No income or expenses',
-      style: context.t.bodyMedium?.copyWith(color: context.c.outline),
-    ),
+  Widget build(BuildContext context) => AppEmptyState(
+    icon: LucideIcons.chart_no_axes_combined,
+    title: context.l10n.noIncomeOrExpenses,
+    compact: true,
   );
 }

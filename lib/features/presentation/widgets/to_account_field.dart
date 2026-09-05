@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
 import 'package:woolet/features/presentation/widgets/form_tile.dart';
 
@@ -20,15 +21,17 @@ class ToAccountField extends StatelessWidget {
     final icon = selectedAccount == null
         ? LucideIcons.building_2
         : AppIcon.fromCode(selectedAccount.iconCode).icon;
-    final accountName = selectedAccount?.name ?? 'Select account';
+    final accountName = selectedAccount == null
+        ? context.l10n.selectAccount
+        : context.localizedAccountName(selectedAccount.name);
 
     return Semantics(
       button: onTap != null,
-      label: 'To account: $accountName',
+      label: '${context.l10n.toAccount}: $accountName',
       child: FormTile(
         icon: icon,
         iconColor: color,
-        label: 'To account',
+        label: context.l10n.toAccount,
         onTap: onTap,
         trailing: ConstrainedBox(
           constraints: BoxConstraints(

@@ -8,6 +8,8 @@ import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/core/settings/currency_controller.dart';
 import 'package:woolet/core/utils/date_utils.dart';
+import 'package:woolet/core/widgets/app_empty_state.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
 import 'package:woolet/features/domain/entities/category_entity.dart';
 import 'package:woolet/features/domain/entities/transaction_entity.dart';
@@ -63,19 +65,28 @@ class BudgetTransactionsScreen extends StatelessWidget {
               return const Center(child: CircularProgressIndicator());
             }
             if (transactions.isEmpty) {
-              return Center(
-                child: Text(
-                  'No transactions for this budget period',
-                  style: context.t.bodyMedium?.copyWith(
-                    color: context.c.outline,
-                  ),
-                ),
+              return AppEmptyState(
+                icon: LucideIcons.receipt_text,
+                title: context.l10n.noBudgetTransactions,
+                actionLabel: context.l10n.addTransaction,
+                onAction: () => _openNewTransaction(context),
               );
             }
 
             return _buildTransactionList(context, transactions);
           },
         ),
+      ),
+    );
+  }
+
+  Future<void> _openNewTransaction(BuildContext context) async {
+    final transactionBloc = context.read<TransactionBloc>();
+    final initialAccount = _findAccount(item.budget.accountUuid);
+    await context.openBottomSheet(
+      child: BlocProvider.value(
+        value: transactionBloc,
+        child: TransactionFormSheet(initialAccount: initialAccount),
       ),
     );
   }
@@ -112,7 +123,10 @@ class BudgetTransactionsScreen extends StatelessWidget {
             child: Row(
               children: [
                 Text(
-                  AppDateUtils.weekdayName(day),
+                  AppDateUtils.weekdayName(
+                    day,
+                    Localizations.localeOf(context),
+                  ),
                   style: context.t.titleLarge,
                 ),
                 const SizedBox(width: 8),

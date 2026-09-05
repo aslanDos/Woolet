@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
+import 'package:woolet/core/settings/app_settings_controller.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
 import 'package:woolet/features/domain/entities/analytics_entity.dart';
 import 'package:woolet/features/presentation/blocs/account/account_bloc.dart';
@@ -43,12 +45,15 @@ class _AnalyticsView extends StatefulWidget {
 }
 
 class _AnalyticsViewState extends State<_AnalyticsView> {
-  PeriodSelection _period = PeriodSelection.initial();
+  late PeriodSelection _period;
   AccountEntity? _account;
 
   @override
   void initState() {
     super.initState();
+    _period = PeriodSelection.forType(
+      sl<AppSettingsController>().value.analyticsPeriod,
+    );
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
@@ -100,7 +105,7 @@ class _AnalyticsViewState extends State<_AnalyticsView> {
           onPressed: () => context.pop(),
           icon: const Icon(LucideIcons.chevron_left),
         ),
-        title: Text('Analytics', style: context.t.headlineMedium),
+        title: Text(context.l10n.analytics, style: context.t.headlineMedium),
       ),
       body: SafeArea(
         top: false,
@@ -113,7 +118,9 @@ class _AnalyticsViewState extends State<_AnalyticsView> {
               return const Center(child: CircularProgressIndicator());
             }
             if (state.status == AnalyticsStatus.failure) {
-              return Center(child: Text(state.errorMessage ?? 'Load failed'));
+              return Center(
+                child: Text(state.errorMessage ?? context.l10n.loadFailed),
+              );
             }
             return _buildContent(context, state.analytics);
           },
@@ -185,7 +192,9 @@ class _AnalyticsViewState extends State<_AnalyticsView> {
           period.anchor.month,
           period.anchor.day,
         );
-        final start = day.subtract(Duration(days: day.weekday - 1));
+        final start = sl<AppSettingsController>().value.weekStart.startOfWeek(
+          day,
+        );
         return (start, start.add(const Duration(days: 7)));
       case PeriodType.month:
         return (
@@ -196,7 +205,8 @@ class _AnalyticsViewState extends State<_AnalyticsView> {
         return (DateTime(period.anchor.year), DateTime(period.anchor.year + 1));
       case PeriodType.lastWeek:
         final day = DateTime(now.year, now.month, now.day);
-        final thisWeek = day.subtract(Duration(days: day.weekday - 1));
+        final thisWeek = sl<AppSettingsController>().value.weekStart
+            .startOfWeek(day);
         return (thisWeek.subtract(const Duration(days: 7)), thisWeek);
       case PeriodType.lastMonth:
         return (

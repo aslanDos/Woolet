@@ -1,51 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
-import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/core/extensions/localization_x.dart';
+import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/features/presentation/widgets/custom_bottom_sheet.dart';
 
-extension ThemeModeUI on ThemeMode {
-  String get label => switch (this) {
-    ThemeMode.system => 'System',
-    ThemeMode.light => 'Light',
-    ThemeMode.dark => 'Dark',
-  };
+class LanguagePickerSheet extends StatelessWidget {
+  const LanguagePickerSheet({super.key, required this.selected});
 
-  String localizedLabel(BuildContext context) => switch (this) {
-    ThemeMode.system => context.l10n.themeSystem,
-    ThemeMode.light => context.l10n.themeLight,
-    ThemeMode.dark => context.l10n.themeDark,
-  };
+  final Locale? selected;
 
-  IconData get icon => switch (this) {
-    ThemeMode.system => LucideIcons.monitor_cog,
-    ThemeMode.light => LucideIcons.sun,
-    ThemeMode.dark => LucideIcons.moon,
-  };
-}
-
-class ThemePickerSheet extends StatelessWidget {
-  const ThemePickerSheet({super.key, required this.selected});
-
-  final ThemeMode selected;
+  static const _locales = [Locale('en'), Locale('ru'), Locale('kk')];
 
   @override
   Widget build(BuildContext context) {
+    final current = selected ?? Localizations.localeOf(context);
+
     return CustomBottomSheet(
       padding: const EdgeInsets.fromLTRB(16, 32, 16, 0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(context.l10n.selectTheme, style: context.t.headlineMedium),
+          Text(context.l10n.selectLanguage, style: context.t.headlineMedium),
           const SizedBox(height: 16),
-          ...ThemeMode.values.map(
-            (mode) => Padding(
+          ..._locales.map(
+            (locale) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
-              child: _ThemeOption(
-                mode: mode,
-                selected: mode == selected,
-                onTap: () => Navigator.pop(context, mode),
+              child: _LanguageOption(
+                locale: locale,
+                selected: locale.languageCode == current.languageCode,
+                onTap: () => Navigator.pop(context, locale),
               ),
             ),
           ),
@@ -55,14 +39,14 @@ class ThemePickerSheet extends StatelessWidget {
   }
 }
 
-class _ThemeOption extends StatelessWidget {
-  const _ThemeOption({
-    required this.mode,
+class _LanguageOption extends StatelessWidget {
+  const _LanguageOption({
+    required this.locale,
     required this.selected,
     required this.onTap,
   });
 
-  final ThemeMode mode;
+  final Locale locale;
   final bool selected;
   final VoidCallback onTap;
 
@@ -83,11 +67,24 @@ class _ThemeOption extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
             children: [
-              Icon(mode.icon, size: 20, color: foregroundColor),
+              SizedBox(
+                width: 24,
+                child: Text(
+                  switch (locale.languageCode) {
+                    'ru' => 'RU',
+                    'kk' => 'KZ',
+                    _ => 'EN',
+                  },
+                  style: context.t.labelMedium?.copyWith(
+                    color: foregroundColor,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  mode.localizedLabel(context),
+                  locale.localizedName(context.l10n),
                   style: context.t.titleMedium?.copyWith(
                     color: foregroundColor,
                   ),

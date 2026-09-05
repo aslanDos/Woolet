@@ -6,9 +6,12 @@ import 'package:woolet/core/constants/app_enums.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/core/router/routes.dart';
 import 'package:woolet/core/settings/currency_controller.dart';
+import 'package:woolet/core/settings/app_settings_controller.dart';
 import 'package:woolet/core/utils/date_utils.dart';
+import 'package:woolet/core/widgets/app_empty_state.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
 import 'package:woolet/features/domain/entities/category_entity.dart';
 import 'package:woolet/features/domain/entities/transaction_entity.dart';
@@ -56,8 +59,16 @@ class _HomeContent extends StatefulWidget {
 class _HomeContentState extends State<_HomeContent> {
   String? _selectedAccountUuid;
   bool _allAccountsSelected = true;
-  PeriodSelection _period = PeriodSelection.initial();
+  late PeriodSelection _period;
   TransactionFilter _filter = const TransactionFilter();
+
+  @override
+  void initState() {
+    super.initState();
+    _period = PeriodSelection.forType(
+      sl<AppSettingsController>().value.homePeriod,
+    );
+  }
 
   void _changePeriod(int direction) {
     if (_period.canNavigate) {
@@ -79,6 +90,50 @@ class _HomeContentState extends State<_HomeContent> {
     if (selected == null || !mounted) return;
     setState(() => _filter = selected);
   }
+
+  Future<void> _openNewTransaction(AccountEntity? account) async {
+    final transactionBloc = context.read<TransactionBloc>();
+    await context.openBottomSheet(
+      child: BlocProvider.value(
+        value: transactionBloc,
+        child: TransactionFormSheet(
+          initialTransactionType: TransactionType.expense,
+          initialAccount: account,
+        ),
+      ),
+    );
+    if (mounted) {
+      context.read<CategoryBloc>().add(const CategoryLoadRequested());
+    }
+  }
+
+  void _goToToday() {
+    setState(() => _period = PeriodSelection.forType(_period.type));
+  }
+
+  bool get _showTodayButton {
+    if (!_period.canNavigate) return false;
+    final today = DateTime.now();
+    final anchor = _period.anchor;
+    return switch (_period.type) {
+      PeriodType.day => !_sameDay(anchor, today),
+      PeriodType.week =>
+        !sl<AppSettingsController>().value.weekStart
+            .startOfWeek(anchor)
+            .isAtSameMomentAs(
+              sl<AppSettingsController>().value.weekStart.startOfWeek(today),
+            ),
+      PeriodType.month =>
+        anchor.year != today.year || anchor.month != today.month,
+      PeriodType.year => anchor.year != today.year,
+      _ => false,
+    };
+  }
+
+  bool _sameDay(DateTime first, DateTime second) =>
+      first.year == second.year &&
+      first.month == second.month &&
+      first.day == second.day;
 
   Future<void> _openAccountSelector() async {
     final bloc = context.read<AccountBloc>();
@@ -102,7 +157,7 @@ class _HomeContentState extends State<_HomeContent> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home', style: context.t.headlineLarge),
+        title: Text(context.l10n.home, style: context.t.headlineLarge),
         centerTitle: false,
         actionsPadding: EdgeInsets.only(right: 16),
         actions: [
@@ -186,7 +241,25 @@ class _HomeContentState extends State<_HomeContent> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 32),
+                    AnimatedSize(
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeOut,
+                      alignment: Alignment.centerRight,
+                      child: _showTodayButton
+                          ? Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton.icon(
+                                onPressed: _goToToday,
+                                icon: const Icon(
+                                  LucideIcons.calendar_clock,
+                                  size: 16,
+                                ),
+                                label: Text(context.l10n.today),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                    SizedBox(height: _showTodayButton ? 8 : 32),
                     AccountBalanceSummary(
                       account: selectedAccount,
                       currencySymbol: selectedAccount == null
@@ -235,13 +308,14 @@ class _HomeContentState extends State<_HomeContent> {
                                   );
                                 }
                                 if (values.isEmpty) {
-                                  return Center(
-                                    child: Text(
-                                      'No transactions for this period',
-                                      style: context.t.bodyMedium?.copyWith(
-                                        color: context.c.outline,
-                                      ),
-                                    ),
+                                  return AppEmptyState(
+                                    icon: LucideIcons.receipt_text,
+                                    title: context.l10n.noTransactionsForPeriod,
+                                    description:
+                                        context.l10n.noTransactionsHint,
+                                    actionLabel: context.l10n.addTransaction,
+                                    onAction: () =>
+                                        _openNewTransaction(selectedAccount),
                                   );
                                 }
                                 return _transactionList(
@@ -288,7 +362,10 @@ class _HomeContentState extends State<_HomeContent> {
             child: Row(
               children: [
                 Text(
-                  AppDateUtils.weekdayName(day),
+                  AppDateUtils.weekdayName(
+                    day,
+                    Localizations.localeOf(context),
+                  ),
                   style: context.t.titleLarge,
                 ),
                 const SizedBox(width: 8),
@@ -392,8 +469,8 @@ class _HomeContentState extends State<_HomeContent> {
         start = _period.anchor;
         end = start;
       case PeriodType.week:
-        start = _period.anchor.subtract(
-          Duration(days: _period.anchor.weekday - 1),
+        start = sl<AppSettingsController>().value.weekStart.startOfWeek(
+          _period.anchor,
         );
         end = start.add(const Duration(days: 6));
       case PeriodType.month:
@@ -403,11 +480,8 @@ class _HomeContentState extends State<_HomeContent> {
         start = DateTime(_period.anchor.year);
         end = DateTime(_period.anchor.year, 12, 31);
       case PeriodType.lastWeek:
-        final thisWeek = DateTime(
-          now.year,
-          now.month,
-          now.day,
-        ).subtract(Duration(days: now.weekday - 1));
+        final thisWeek = sl<AppSettingsController>().value.weekStart
+            .startOfWeek(now);
         start = thisWeek.subtract(const Duration(days: 7));
         end = start.add(const Duration(days: 6));
       case PeriodType.lastMonth:

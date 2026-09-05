@@ -7,6 +7,7 @@ import 'package:woolet/core/constants/app_enums.dart';
 import 'package:woolet/core/constants/app_constants.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/core/router/routes.dart';
 import 'package:woolet/core/settings/currency_controller.dart';
 import 'package:woolet/features/domain/entities/account_entity.dart';
@@ -81,7 +82,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     BackButton(onPressed: _back)
                   else
                     const SizedBox(width: 48),
-                  TextButton(onPressed: _skip, child: const Text('Skip')),
+                  TextButton(onPressed: _skip, child: Text(context.l10n.skip)),
                 ],
               ),
             ),
@@ -111,8 +112,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: Button(
                       key: ValueKey(_page),
                       label: _page == _pageCount - 1
-                          ? 'Get started'
-                          : 'Continue',
+                          ? context.l10n.getStarted
+                          : context.l10n.continueLabel,
                       icon: _page == _pageCount - 1
                           ? LucideIcons.sparkles
                           : LucideIcons.arrow_right,

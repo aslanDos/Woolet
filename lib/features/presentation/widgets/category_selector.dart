@@ -4,6 +4,7 @@ import 'package:woolet/core/constants/app_enums.dart';
 import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/extensions/category_type_x.dart';
 import 'package:woolet/core/extensions/pop_up_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/features/domain/entities/category_entity.dart';
 import 'package:woolet/features/presentation/sheets/categories_sheet.dart';
@@ -40,15 +41,17 @@ class CategorySelector extends StatelessWidget {
     final color = category?.colorValue == null
         ? type.backgroundColor
         : Color(category!.colorValue!);
-    final value = category?.name ?? 'Select category';
+    final value = category == null
+        ? context.l10n.selectCategory
+        : context.localizedCategoryName(category.name);
 
     return Semantics(
       button: true,
-      label: 'Category: $value',
+      label: '${context.l10n.category}: $value',
       child: FormTile(
         icon: icon,
         iconColor: color,
-        label: 'Category',
+        label: context.l10n.category,
         onTap: () => _selectCategory(context),
         trailing: ConstrainedBox(
           constraints: BoxConstraints(

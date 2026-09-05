@@ -3,6 +3,7 @@ import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:woolet/core/constants/app_enums.dart';
 import 'package:woolet/core/extensions/budget_period_x.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/features/presentation/widgets/button.dart';
 import 'package:woolet/features/presentation/widgets/custom_bottom_sheet.dart';
 
@@ -43,7 +44,7 @@ class _BudgetFilterSheetState extends State<BudgetFilterSheet> {
   @override
   Widget build(BuildContext context) {
     return CustomBottomSheet(
-      title: const Text('Filter budgets'),
+      title: Text(context.l10n.filterBudgets),
       leading: IconButton.filled(
         onPressed: () => Navigator.pop(context),
         icon: const Icon(LucideIcons.x),
@@ -52,7 +53,7 @@ class _BudgetFilterSheetState extends State<BudgetFilterSheet> {
         children: [
           Expanded(
             child: Button(
-              label: 'Reset',
+              label: context.l10n.reset,
               backgroundColor: context.c.surfaceContainerHigh,
               foregroundColor: context.c.onSurface,
               onPressed: _reset,
@@ -61,7 +62,7 @@ class _BudgetFilterSheetState extends State<BudgetFilterSheet> {
           const SizedBox(width: 12),
           Expanded(
             child: Button(
-              label: 'Save',
+              label: context.l10n.save,
               onPressed: _selectedPeriods.isEmpty ? null : _save,
             ),
           ),
@@ -70,7 +71,7 @@ class _BudgetFilterSheetState extends State<BudgetFilterSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Period', style: context.t.titleLarge),
+          Text(context.l10n.period, style: context.t.titleLarge),
           const SizedBox(height: 12),
           GridView.count(
             shrinkWrap: true,
@@ -114,7 +115,10 @@ class _BudgetFilterSheetState extends State<BudgetFilterSheet> {
                 ),
                 const SizedBox(width: 6),
                 Flexible(
-                  child: Text(period.label, overflow: TextOverflow.ellipsis),
+                  child: Text(
+                    period.localizedLabel(context),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),

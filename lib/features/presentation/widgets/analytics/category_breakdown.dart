@@ -3,6 +3,9 @@ import 'package:woolet/core/constants/app_enums.dart';
 import 'package:woolet/core/di/service_locator.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
 import 'package:woolet/core/extensions/transaction_type_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
+import 'package:woolet/core/widgets/app_empty_state.dart';
+import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:woolet/core/settings/currency_controller.dart';
 import 'package:woolet/features/domain/entities/analytics_entity.dart';
 import 'package:woolet/features/domain/entities/category_entity.dart';
@@ -84,7 +87,7 @@ class _CategoryBreakdownState extends State<CategoryBreakdown> {
             _Header(controller: _controller),
             const SizedBox(height: 20),
             if (segments.isEmpty)
-              _EmptyState(typeLabel: _controller.typeLabel)
+              _EmptyState(type: _controller.selectedType)
             else ...[
               CategoryDonutChart(
                 segments: _controller.chartSegments,
@@ -156,18 +159,21 @@ class _Header extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.typeLabel});
+  const _EmptyState({required this.type});
 
-  final String typeLabel;
+  final TransactionType type;
 
   @override
   Widget build(BuildContext context) => SizedBox(
     height: 180,
-    child: Center(
-      child: Text(
-        'No ${typeLabel.toLowerCase()} in this period',
-        style: context.t.bodyMedium?.copyWith(color: context.c.outline),
-      ),
+    child: AppEmptyState(
+      icon: type == TransactionType.income
+          ? LucideIcons.trending_up
+          : LucideIcons.trending_down,
+      title: type == TransactionType.income
+          ? context.l10n.noIncomeForPeriod
+          : context.l10n.noExpensesForPeriod,
+      compact: true,
     ),
   );
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:woolet/core/constants/app_enums.dart';
 import 'package:woolet/core/constants/app_icons.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/core/extensions/transaction_type_x.dart';
 import 'package:woolet/core/settings/currency_controller.dart';
 import 'package:woolet/core/utils/amount_utils.dart';
@@ -38,13 +39,17 @@ class TransactionCard extends StatelessWidget {
         ? transaction.type.icon
         : AppIcon.fromCode(category?.iconCode ?? AppIcon.wallet.code).icon;
     final title = transaction.type == TransactionType.transfer
-        ? 'Transfer'
-        : category?.name ?? transaction.type.label;
+        ? context.l10n.transfer
+        : category == null
+        ? transaction.type.localizedLabel(context)
+        : context.localizedCategoryName(category!.name);
     final subtitle = transaction.note.isNotEmpty
         ? transaction.note
         : transaction.type == TransactionType.transfer
-        ? '${account?.name ?? 'Account'}   →   ${toAccount?.name ?? 'Account'}'
-        : account?.name ?? 'Account';
+        ? '${account == null ? context.l10n.account : context.localizedAccountName(account!.name)}   →   ${toAccount == null ? context.l10n.account : context.localizedAccountName(toAccount!.name)}'
+        : account == null
+        ? context.l10n.account
+        : context.localizedAccountName(account!.name);
     final symbol = account == null
         ? currencyController.value.symbol
         : currencyController.symbolForCode(account!.currencyCode);

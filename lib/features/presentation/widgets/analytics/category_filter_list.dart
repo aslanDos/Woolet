@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
 import 'package:woolet/core/utils/amount_utils.dart';
 import 'package:woolet/core/widgets/pressable.dart';
 import 'package:woolet/features/presentation/widgets/analytics/category_breakdown_controller.dart';
@@ -59,7 +60,10 @@ class _AllCategoriesCard extends StatelessWidget {
         child: Row(
           children: [
             Expanded(
-              child: Text('All Categories', style: context.t.titleMedium),
+              child: Text(
+                context.l10n.allCategories,
+                style: context.t.titleMedium,
+              ),
             ),
             const SizedBox(width: 12),
             _RoundCheckbox(value: selected, onChanged: onTap),

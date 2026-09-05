@@ -3,6 +3,8 @@ import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:woolet/core/database/app_database.dart';
 import 'package:woolet/core/settings/currency_controller.dart';
+import 'package:woolet/core/settings/app_settings_controller.dart';
+import 'package:woolet/core/settings/locale_controller.dart';
 import 'package:woolet/core/theme/theme_controller.dart';
 import 'package:woolet/features/data/datasources/account_local_data_source.dart';
 import 'package:woolet/features/data/datasources/account_local_data_source_impl.dart';
@@ -47,6 +49,12 @@ Future<void> initDependencies() async {
   final preferences = await SharedPreferences.getInstance();
   sl.registerSingleton<SharedPreferences>(preferences);
   sl.registerLazySingleton<ThemeController>(() => ThemeController(preferences));
+  sl.registerLazySingleton<AppSettingsController>(
+    () => AppSettingsController(preferences),
+  );
+  sl.registerLazySingleton<LocaleController>(
+    () => LocaleController(preferences),
+  );
   final currencyController = await CurrencyController.create(preferences);
   sl.registerSingleton<CurrencyController>(currencyController);
 

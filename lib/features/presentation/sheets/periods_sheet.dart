@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_lucide/flutter_lucide.dart';
 import 'package:woolet/core/extensions/theme_x.dart';
+import 'package:woolet/core/extensions/localization_x.dart';
+import 'package:woolet/core/di/service_locator.dart';
+import 'package:woolet/core/settings/app_settings_controller.dart';
+import 'package:woolet/core/utils/date_utils.dart';
 import 'package:woolet/features/presentation/widgets/custom_bottom_sheet.dart';
 
 enum PeriodType { day, week, month, year, lastWeek, lastMonth, allTime, custom }
@@ -15,6 +19,17 @@ extension PeriodTypeX on PeriodType {
     PeriodType.lastMonth => 'Last month',
     PeriodType.allTime => 'All the time',
     PeriodType.custom => 'Custom',
+  };
+
+  String localizedLabel(BuildContext context) => switch (this) {
+    PeriodType.day => context.l10n.periodDay,
+    PeriodType.week => context.l10n.periodWeek,
+    PeriodType.month => context.l10n.periodMonth,
+    PeriodType.year => context.l10n.periodYear,
+    PeriodType.lastWeek => context.l10n.periodLastWeek,
+    PeriodType.lastMonth => context.l10n.periodLastMonth,
+    PeriodType.allTime => context.l10n.periodAllTime,
+    PeriodType.custom => context.l10n.periodCustom,
   };
 
   bool get canNavigate => switch (this) {
@@ -35,9 +50,19 @@ class PeriodSelection {
     this.end,
   });
 
-  factory PeriodSelection.initial() {
+  factory PeriodSelection.currentDay() {
     final now = DateTime.now();
-    return PeriodSelection(type: PeriodType.month, anchor: _dateOnly(now));
+    return PeriodSelection(type: PeriodType.day, anchor: _dateOnly(now));
+  }
+
+  factory PeriodSelection.currentWeek() {
+    final now = DateTime.now();
+    return PeriodSelection(type: PeriodType.week, anchor: _dateOnly(now));
+  }
+
+  factory PeriodSelection.forType(PeriodType type) {
+    final now = DateTime.now();
+    return PeriodSelection(type: type, anchor: _dateOnly(now));
   }
 
   final PeriodType type;
@@ -83,26 +108,42 @@ class PeriodSelection {
     final localizations = MaterialLocalizations.of(context);
 
     return switch (type) {
-      PeriodType.day => localizations.formatMediumDate(anchor),
+      PeriodType.day => _dayLabel(context, localizations),
       PeriodType.week => _weekLabel(localizations),
       PeriodType.month => localizations.formatMonthYear(anchor),
       PeriodType.year => anchor.year.toString(),
-      PeriodType.lastWeek => PeriodType.lastWeek.label,
-      PeriodType.lastMonth => PeriodType.lastMonth.label,
-      PeriodType.allTime => PeriodType.allTime.label,
-      PeriodType.custom => _customLabel(localizations),
+      PeriodType.lastWeek => PeriodType.lastWeek.localizedLabel(context),
+      PeriodType.lastMonth => PeriodType.lastMonth.localizedLabel(context),
+      PeriodType.allTime => PeriodType.allTime.localizedLabel(context),
+      PeriodType.custom => _customLabel(context, localizations),
     };
   }
 
+  String _dayLabel(BuildContext context, MaterialLocalizations localizations) {
+    final locale = Localizations.localeOf(context);
+    if (locale.languageCode != 'kk') {
+      return localizations.formatMediumDate(anchor);
+    }
+    return '${localizations.formatShortMonthDay(anchor)}, '
+        '${AppDateUtils.weekdayName(anchor, locale)}';
+  }
+
   String _weekLabel(MaterialLocalizations localizations) {
-    final firstDay = anchor.subtract(Duration(days: anchor.weekday - 1));
+    final firstDay = sl<AppSettingsController>().value.weekStart.startOfWeek(
+      anchor,
+    );
     final lastDay = firstDay.add(const Duration(days: 6));
     return '${localizations.formatShortMonthDay(firstDay)} – '
         '${localizations.formatShortMonthDay(lastDay)}';
   }
 
-  String _customLabel(MaterialLocalizations localizations) {
-    if (start == null || end == null) return PeriodType.custom.label;
+  String _customLabel(
+    BuildContext context,
+    MaterialLocalizations localizations,
+  ) {
+    if (start == null || end == null) {
+      return PeriodType.custom.localizedLabel(context);
+    }
     return '${localizations.formatShortDate(start!)} – '
         '${localizations.formatShortDate(end!)}';
   }
@@ -157,7 +198,7 @@ class _PeriodsSheetState extends State<PeriodsSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Select Period', style: context.t.headlineMedium),
+          Text(context.l10n.selectPeriod, style: context.t.headlineMedium),
           const SizedBox(height: 16),
           ..._visibleTypes.map(_buildOption),
           if (_selectedType == PeriodType.custom) _buildCustomRange(),
@@ -186,7 +227,7 @@ class _PeriodsSheetState extends State<PeriodsSheet> {
               children: [
                 Expanded(
                   child: Text(
-                    type.label,
+                    type.localizedLabel(context),
                     style: context.t.titleMedium?.copyWith(
                       color: isSelected
                           ? context.c.onPrimaryContainer
@@ -217,7 +258,7 @@ class _PeriodsSheetState extends State<PeriodsSheet> {
             children: [
               Expanded(
                 child: _DateButton(
-                  label: 'From',
+                  label: context.l10n.from,
                   value: _customStart,
                   onTap: () => _pickDate(isStart: true),
                 ),
@@ -225,7 +266,7 @@ class _PeriodsSheetState extends State<PeriodsSheet> {
               const SizedBox(width: 8),
               Expanded(
                 child: _DateButton(
-                  label: 'To',
+                  label: context.l10n.to,
                   value: _customEnd,
                   onTap: () => _pickDate(isStart: false),
                 ),
@@ -245,7 +286,7 @@ class _PeriodsSheetState extends State<PeriodsSheet> {
                   end: _customEnd,
                 ),
               ),
-              child: const Text('Apply'),
+              child: Text(context.l10n.apply),
             ),
           ),
         ],
